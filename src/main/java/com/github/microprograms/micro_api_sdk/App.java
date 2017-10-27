@@ -1,4 +1,4 @@
-package com.github.microprograms;
+package com.github.microprograms.micro_api_sdk;
 
 /**
  * Hello world!
