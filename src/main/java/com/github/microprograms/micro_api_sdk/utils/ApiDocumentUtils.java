@@ -17,8 +17,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum;
-import com.github.microprograms.micro_api_runtime.model.Request;
-import com.github.microprograms.micro_api_runtime.model.Response;
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_api_sdk.model.EngineDefinition;
 import com.github.microprograms.micro_api_sdk.model.ErrorCodeDefinition;
@@ -63,34 +61,27 @@ public class ApiDocumentUtils {
         apiBookmarkBox.append("p", "共" + engineDefinition.getApiDefinitions().size() + "个接口");
         HtmlBuilder apiBookmarks = apiBookmarkBox.child("ul");
         for (ApiDefinition apiDefinition : engineDefinition.getApiDefinitions()) {
-            apiBookmarks.child("li").cssClass("api-name-bookmark").child("a").attr("href", "#" + apiDefinition.getJavaClassName()).text(StringEscapeUtils.escapeHtml4(apiDefinition.getComment() + " - " + apiDefinition.getJavaClassName()));
+            apiBookmarks.child("li").cssClass("api-name-bookmark").child("a").attr("href", "#" + apiDefinition.getJavaClassName()).text(StringEscapeUtils.escapeHtml4(apiDefinition.getComment()));
         }
         // 公共字段
         HtmlBuilder commonFields = body.child("div").cssClass("alert alert-success");
         commonFields.child("dt").cssClass("request-and-response-title").text("公共请求地址");
         commonFields.child("dd").child("span").cssClass("api-field-name").text(engineDefinition.getServerAddressDefinition().toString());
-        commonFields.child("dt").cssClass("request-and-response-title").text("公共请求参数字段");
-        _appendEntityDefinition(commonFields, _buildEntityDefinition(Request.class), engineDefinition);
-        commonFields.child("dt").cssClass("request-and-response-title").text("公共响应字段");
-        _appendEntityDefinition(commonFields, _buildEntityDefinition(Response.class), engineDefinition);
         commonFields.child("dt").cssClass("request-and-response-title").text("公共错误码");
         _appendErrorCodeDefinition(commonFields, engineDefinition);
         // API接口
-        for (ApiDefinition apiDefinition : engineDefinition.getApiDefinitions()) {
+        for (int i = 0; i < engineDefinition.getApiDefinitions().size(); i++) {
+            ApiDefinition apiDefinition = engineDefinition.getApiDefinitions().get(i);
             HtmlBuilder apiBox = body.child("div").cssClass("alert alert-info");
             apiBox.child("a").attr("name", apiDefinition.getJavaClassName());
-            apiBox.child("h4").cssClass("api-name").text(StringEscapeUtils.escapeHtml4(apiDefinition.getJavaClassName() + " " + apiDefinition.getComment()));
+            apiBox.child("h4").cssClass("api-name").text(StringEscapeUtils.escapeHtml4("#" + (i + 1) + " " + apiDefinition.getComment()));
             if (StringUtils.isNotBlank(apiDefinition.getDescription())) {
                 apiBox.child("h5").cssClass("api-name").text(StringEscapeUtils.escapeHtml4(apiDefinition.getDescription()));
             }
-            if (apiDefinition.getRequestDefinition() != null) {
-                apiBox.child("dt").cssClass("request-and-response-title").text("请求参数字段");
-                _appendEntityDefinition(apiBox, apiDefinition.getRequestDefinition(), engineDefinition);
-            }
-            if (apiDefinition.getResponseDefinition() != null) {
-                apiBox.child("dt").cssClass("request-and-response-title").text("响应字段");
-                _appendEntityDefinition(apiBox, apiDefinition.getResponseDefinition(), engineDefinition);
-            }
+            apiBox.child("dt").cssClass("request-and-response-title").text("请求字段");
+            _appendRequestDefinition(apiBox, apiDefinition.getRequestDefinition(), apiDefinition, engineDefinition);
+            apiBox.child("dt").cssClass("request-and-response-title").text("响应字段");
+            _appendResponseDefinition(apiBox, apiDefinition.getResponseDefinition(), engineDefinition);
         }
         // Model
         for (EntityDefinition modelDefinition : engineDefinition.getModelDefinitions()) {
@@ -111,6 +102,31 @@ public class ApiDocumentUtils {
         tail.append("span", "GenerateBy").child("a").href("https://github.com/xuzw/api-engine-sdk").text("ApiEngineSdk");
         tail.append("span", _buildTime());
         return root.build();
+    }
+
+    private static void _appendRequestDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, ApiDefinition apiDefinition, EngineDefinition engineDefinition) {
+        List<FieldDefinition> commonFieldDefinitions = new ArrayList<>();
+        commonFieldDefinitions.add(_buildFieldDefinition("接口名（固定为" + apiDefinition.getJavaClassName() + "）", "apiName", "String", true));
+        if (entityDefinition == null) {
+            entityDefinition = new EntityDefinition();
+            entityDefinition.setFieldDefinitions(commonFieldDefinitions);
+        } else {
+            entityDefinition.getFieldDefinitions().addAll(0, commonFieldDefinitions);
+        }
+        _appendEntityDefinition(apiBox, entityDefinition, engineDefinition);
+    }
+
+    private static void _appendResponseDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, EngineDefinition engineDefinition) {
+        List<FieldDefinition> commonFieldDefinitions = new ArrayList<>();
+        commonFieldDefinitions.add(_buildFieldDefinition("错误码", "code", "int", true));
+        commonFieldDefinitions.add(_buildFieldDefinition("错误提示", "message", "String", true));
+        if (entityDefinition == null) {
+            entityDefinition = new EntityDefinition();
+            entityDefinition.setFieldDefinitions(commonFieldDefinitions);
+        } else {
+            entityDefinition.getFieldDefinitions().addAll(0, commonFieldDefinitions);
+        }
+        _appendEntityDefinition(apiBox, entityDefinition, engineDefinition);
     }
 
     private static void _appendEntityDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, EngineDefinition engineDefinition) {
@@ -141,7 +157,6 @@ public class ApiDocumentUtils {
         });
         for (ErrorCodeDefinition errorCodeDefinition : errorCodeDefinitions) {
             HtmlBuilder errorCode = container.child("dd");
-            errorCode.child("span").cssClass("api-field-name").text(errorCodeDefinition.getName());
             errorCode.child("span").cssClass("api-field-type").text(String.valueOf(errorCodeDefinition.getCode()));
             errorCode.child("span").cssClass("api-field-comment").text(StringEscapeUtils.escapeHtml4(errorCodeDefinition.getMessage()));
         }
@@ -172,6 +187,15 @@ public class ApiDocumentUtils {
             }
         }
         return null;
+    }
+
+    private static FieldDefinition _buildFieldDefinition(String comment, String name, String javaType, boolean required) {
+        FieldDefinition fieldDefinition = new FieldDefinition();
+        fieldDefinition.setComment(comment);
+        fieldDefinition.setJavaType(javaType);
+        fieldDefinition.setName(name);
+        fieldDefinition.setRequired(required);
+        return fieldDefinition;
     }
 
     private static EntityDefinition _buildEntityDefinition(Class<?> clz) {
