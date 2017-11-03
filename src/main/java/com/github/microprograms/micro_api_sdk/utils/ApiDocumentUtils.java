@@ -80,18 +80,20 @@ public class ApiDocumentUtils {
             _appendResponseDefinition(apiBox, apiDefinition.getResponseDefinition(), engineDefinition);
         }
         // Model
-        for (EntityDefinition modelDefinition : engineDefinition.getModelDefinitions()) {
-            HtmlBuilder modelBox = body.child("div").cssClass("alert alert-success");
-            modelBox.child("a").attr("name", modelDefinition.getJavaClassName());
-            StringBuilder modelTitle = new StringBuilder(modelDefinition.getJavaClassName());
-            if (StringUtils.isNoneBlank(modelDefinition.getComment())) {
-                modelTitle.append(" ").append(modelDefinition.getComment());
+        if (engineDefinition.getModelDefinitions() != null) {
+            for (EntityDefinition modelDefinition : engineDefinition.getModelDefinitions()) {
+                HtmlBuilder modelBox = body.child("div").cssClass("alert alert-success");
+                modelBox.child("a").attr("name", modelDefinition.getJavaClassName());
+                StringBuilder modelTitle = new StringBuilder(modelDefinition.getJavaClassName());
+                if (StringUtils.isNoneBlank(modelDefinition.getComment())) {
+                    modelTitle.append(" ").append(modelDefinition.getComment());
+                }
+                modelBox.child("h4").cssClass("api-name").text(StringEscapeUtils.escapeHtml4(modelTitle.toString()));
+                if (StringUtils.isNotBlank(modelDefinition.getDescription())) {
+                    modelBox.child("h5").cssClass("api-name").text(StringEscapeUtils.escapeHtml4(modelDefinition.getDescription()));
+                }
+                _appendEntityDefinition(modelBox, modelDefinition, engineDefinition);
             }
-            modelBox.child("h4").cssClass("api-name").text(StringEscapeUtils.escapeHtml4(modelTitle.toString()));
-            if (StringUtils.isNotBlank(modelDefinition.getDescription())) {
-                modelBox.child("h5").cssClass("api-name").text(StringEscapeUtils.escapeHtml4(modelDefinition.getDescription()));
-            }
-            _appendEntityDefinition(modelBox, modelDefinition, engineDefinition);
         }
         // 尾部
         HtmlBuilder tail = body.child("div").cssClass("tail").child("p");
@@ -177,6 +179,9 @@ public class ApiDocumentUtils {
     }
 
     private static EntityDefinition _getModelDefinition(String javaClassName, EngineDefinition engineDefinition) {
+        if (engineDefinition.getModelDefinitions() == null) {
+            return null;
+        }
         for (EntityDefinition x : engineDefinition.getModelDefinitions()) {
             if (x.getJavaClassName().equals(javaClassName)) {
                 return x;
