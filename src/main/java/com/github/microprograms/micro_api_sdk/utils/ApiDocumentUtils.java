@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -20,9 +19,6 @@ import com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseC
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_api_sdk.model.EngineDefinition;
 import com.github.microprograms.micro_api_sdk.model.ErrorCodeDefinition;
-import com.github.microprograms.micro_entity_definition_runtime.annotation.Comment;
-import com.github.microprograms.micro_entity_definition_runtime.annotation.Description;
-import com.github.microprograms.micro_entity_definition_runtime.annotation.Required;
 import com.github.microprograms.micro_entity_definition_runtime.model.EntityDefinition;
 import com.github.microprograms.micro_entity_definition_runtime.model.FieldDefinition;
 import com.github.xuzw.html_builder.HtmlBuilder;
@@ -196,30 +192,6 @@ public class ApiDocumentUtils {
         fieldDefinition.setName(name);
         fieldDefinition.setRequired(required);
         return fieldDefinition;
-    }
-
-    private static EntityDefinition _buildEntityDefinition(Class<?> clz) {
-        EntityDefinition entityDefinition = new EntityDefinition();
-        entityDefinition.setFieldDefinitions(new ArrayList<>());
-        for (Field field : clz.getDeclaredFields()) {
-            FieldDefinition fieldDefinition = new FieldDefinition();
-            fieldDefinition.setName(field.getName());
-            fieldDefinition.setJavaType(field.getType().getSimpleName());
-            Comment comment = field.getAnnotation(Comment.class);
-            if (comment != null) {
-                fieldDefinition.setComment(comment.value());
-            }
-            Description description = field.getAnnotation(Description.class);
-            if (description != null) {
-                fieldDefinition.setDescription(description.value());
-            }
-            Required required = field.getAnnotation(Required.class);
-            if (required != null) {
-                fieldDefinition.setRequired(required.value());
-            }
-            entityDefinition.getFieldDefinitions().add(fieldDefinition);
-        }
-        return entityDefinition;
     }
 
     private static String _buildCss() {
