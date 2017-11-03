@@ -99,7 +99,7 @@ public class ApiDocumentUtils {
         }
         // 尾部
         HtmlBuilder tail = body.child("div").cssClass("tail").child("p");
-        tail.append("span", "GenerateBy").child("a").href("https://github.com/xuzw/api-engine-sdk").text("ApiEngineSdk");
+        tail.append("span", "GenerateBy").child("a").href("https://github.com/microprograms/micro-api-sdk").text("MicroApiSdk");
         tail.append("span", _buildTime());
         return root.build();
     }
