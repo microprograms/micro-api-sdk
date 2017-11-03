@@ -1,0 +1,390 @@
+
+<!DOCTYPE html/>
+<html lang="zh-CN">
+</html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta charset="utf-8"/>
+    <title>示例API v1.0.3</title>
+    <style type="text/css">
+    .tail {
+          font-size: 14px;
+          text-align: center;
+    }
+    a:visited {
+          color: #333;
+    }
+    .api-name-bookmark {
+          color: #333;
+    }
+    .api-name {
+          color: #515151;
+    }
+    .api-field-name {
+          color: #00f;
+    }
+    .api-field-type {
+          color: green;
+    }
+    .api-field-required {
+          color: #853f26;
+    }
+    .api-field-comment {
+          color: gray;
+    }
+    .request-and-response-title {
+          color: #13C20F;
+    }
+    .alert {
+          padding: 15px;
+          margin-bottom: 20px;
+          border: 1px solid transparent;
+          border-radius: 4px;
+    }
+    .alert h4,p {
+          margin-top: 0;
+    }
+    .alert-success {
+          background-color: #dff0d8;
+          border-color: #d6e9c6;
+          color: #468847;
+    }
+    .alert-info {
+          background-color: #d9edf7;
+          border-color: #bce8f1;
+          color: #3a87ad;
+    }
+    .alert-warning {
+          background-color: #fcf8e3;
+          border-color: #fbeed5;
+          color: #c09853;
+    }
+</style>
+</head>
+<body>
+    <div>
+        <h4>示例API v1.0.3</h4>
+    </div>
+    <h5>小提示：利用浏览器搜索功能Ctrl+F可快速定位API接口，短关键字搜索范围大，长关键字搜索结果精确、接口名、接口描述、参数名、参数描述、响应字段名、响应字段描述等都可作为搜索关键字<br/>每个接口都已定义快速跳转书签，点击超链接即可跳转，跳转后URL末尾会添加路径名做区分，可添加该URL到浏览器书签，以便下次打开时自动定位到该接口</h5>
+    <div class="alert alert-warning">
+        <p>共8个接口</p>
+        <ul>
+            <li class="api-name-bookmark">
+                <a href="#Api_QueryList_Api">查询API列表 - Api_QueryList_Api</a>
+            </li>
+            <li class="api-name-bookmark">
+                <a href="#Server_QueryTime_Api">查询服务器时间 - Server_QueryTime_Api</a>
+            </li>
+            <li class="api-name-bookmark">
+                <a href="#SystemEnv_Query_Api">查询服务器系统环境 - SystemEnv_Query_Api</a>
+            </li>
+            <li class="api-name-bookmark">
+                <a href="#TBrowseWebpageHistory_Create_Api">新增网页浏览历史记录 - TBrowseWebpageHistory_Create_Api</a>
+            </li>
+            <li class="api-name-bookmark">
+                <a href="#TBrowseWebpageHistory_Delete_Api">删除网页浏览历史记录 - TBrowseWebpageHistory_Delete_Api</a>
+            </li>
+            <li class="api-name-bookmark">
+                <a href="#TBrowseWebpageHistory_Query_Api">查询网页浏览历史记录 - TBrowseWebpageHistory_Query_Api</a>
+            </li>
+            <li class="api-name-bookmark">
+                <a href="#TBrowseWebpageHistory_Update_Api">更新网页浏览历史记录 - TBrowseWebpageHistory_Update_Api</a>
+            </li>
+            <li class="api-name-bookmark">
+                <a href="#MyBooks_Query_Api">查询我的阅读历史记录 - MyBooks_Query_Api</a>
+            </li>
+        </ul>
+    </div>
+    <div class="alert alert-success">
+        <dt class="request-and-response-title">公共请求地址</dt>
+        <dd>
+            <span class="api-field-name">http://localhost:8080/micro-api-sdk-example/api</span>
+        </dd>
+        <dt class="request-and-response-title">公共请求参数字段</dt>
+        <dd>
+            <span class="api-field-name">apiName</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">API接口名字</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">uuid</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">可选</span>
+            <span class="api-field-comment">请求唯一标识符</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">sendToEngineTimestamp</span>
+            <span class="api-field-type">long</span>
+            <span class="api-field-required">可选</span>
+            <span class="api-field-comment">请求发送时间</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">executeByEngineTimestamp</span>
+            <span class="api-field-type">long</span>
+            <span class="api-field-required">可选</span>
+            <span class="api-field-comment">请求被服务器开始处理的时间戳</span>
+        </dd>
+        <dt class="request-and-response-title">公共响应字段</dt>
+        <dd>
+            <span class="api-field-name">apiName</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">API接口名字</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">requestUuid</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">请求唯一标识符</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">code</span>
+            <span class="api-field-type">int</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">错误码</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">message</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">可选</span>
+            <span class="api-field-comment">错误提示</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">stackTrace</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">可选</span>
+            <span class="api-field-comment">错误堆栈</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">overByEngineTimestamp</span>
+            <span class="api-field-type">long</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">请求被服务器处理完毕的时间戳</span>
+        </dd>
+        <dt class="request-and-response-title">公共错误码</dt>
+        <dd>
+            <span class="api-field-name">success</span>
+            <span class="api-field-type">0</span>
+            <span class="api-field-comment">成功</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">request_data_cannot_be_resolved_exception</span>
+            <span class="api-field-type">1</span>
+            <span class="api-field-comment">请求数据无法解析</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">api_not_found_exception</span>
+            <span class="api-field-type">2</span>
+            <span class="api-field-comment">API未找到</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">api_execute_exception</span>
+            <span class="api-field-type">3</span>
+            <span class="api-field-comment">API执行异常</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">unknown_exception</span>
+            <span class="api-field-type">4</span>
+            <span class="api-field-comment">未知异常</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">not_exists</span>
+            <span class="api-field-type">1010</span>
+            <span class="api-field-comment">资源不存在或已被删除</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">too_long_or_too_short</span>
+            <span class="api-field-type">1011</span>
+            <span class="api-field-comment">字符串太长或太短</span>
+        </dd>
+    </div>
+    <div class="alert alert-info">
+        <a name="Api_QueryList_Api">
+        </a>
+        <h4 class="api-name">Api_QueryList_Api 查询API列表</h4>
+        <h5 class="api-name">返回API接口名字列表</h5>
+        <dt class="request-and-response-title">响应字段</dt>
+        <dd>
+            <span class="api-field-name">apiList</span>
+            <span class="api-field-type">List&lt;String&gt;</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">API接口名字列表</span>
+        </dd>
+    </div>
+    <div class="alert alert-info">
+        <a name="Server_QueryTime_Api">
+        </a>
+        <h4 class="api-name">Server_QueryTime_Api 查询服务器时间</h4>
+        <dt class="request-and-response-title">响应字段</dt>
+        <dd>
+            <span class="api-field-name">timestamp</span>
+            <span class="api-field-type">Long</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">服务器时间戳</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">time</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">服务器时间(格式yyyy-MM-dd HH:mm:ss)</span>
+        </dd>
+    </div>
+    <div class="alert alert-info">
+        <a name="SystemEnv_Query_Api">
+        </a>
+        <h4 class="api-name">SystemEnv_Query_Api 查询服务器系统环境</h4>
+        <dt class="request-and-response-title">响应字段</dt>
+        <dd>
+            <span class="api-field-name">env</span>
+            <span class="api-field-type">Map<String, String></span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">
+
+            </span>
+        </dd>
+        <dd>
+            <span class="api-field-name">properties</span>
+            <span class="api-field-type">Map<String, String></span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">
+
+            </span>
+        </dd>
+    </div>
+    <div class="alert alert-info">
+        <a name="TBrowseWebpageHistory_Create_Api">
+        </a>
+        <h4 class="api-name">TBrowseWebpageHistory_Create_Api 新增网页浏览历史记录</h4>
+        <dt class="request-and-response-title">请求参数字段</dt>
+        <dd>
+            <span class="api-field-name">url</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">网址</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">title</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">标题</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">gist</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">可选</span>
+            <span class="api-field-comment">主旨</span>
+        </dd>
+        <dt class="request-and-response-title">响应字段</dt>
+        <dd>
+            <span class="api-field-name">object</span>
+            <span class="api-field-type">TBrowseWebpageHistory</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">
+
+            </span>
+        </dd>
+    </div>
+    <div class="alert alert-info">
+        <a name="TBrowseWebpageHistory_Delete_Api">
+        </a>
+        <h4 class="api-name">TBrowseWebpageHistory_Delete_Api 删除网页浏览历史记录</h4>
+        <dt class="request-and-response-title">请求参数字段</dt>
+        <dd>
+            <span class="api-field-name">id</span>
+            <span class="api-field-type">Integer</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">
+
+            </span>
+        </dd>
+    </div>
+    <div class="alert alert-info">
+        <a name="TBrowseWebpageHistory_Query_Api">
+        </a>
+        <h4 class="api-name">TBrowseWebpageHistory_Query_Api 查询网页浏览历史记录</h4>
+        <dt class="request-and-response-title">响应字段</dt>
+        <dd>
+            <span class="api-field-name">list</span>
+            <span class="api-field-type">List&lt;TBrowseWebpageHistory&gt;</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">
+
+            </span>
+        </dd>
+    </div>
+    <div class="alert alert-info">
+        <a name="TBrowseWebpageHistory_Update_Api">
+        </a>
+        <h4 class="api-name">TBrowseWebpageHistory_Update_Api 更新网页浏览历史记录</h4>
+        <dt class="request-and-response-title">请求参数字段</dt>
+        <dd>
+            <span class="api-field-name">id</span>
+            <span class="api-field-type">Integer</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">
+
+            </span>
+        </dd>
+        <dd>
+            <span class="api-field-name">url</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">可选</span>
+            <span class="api-field-comment">网址</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">title</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">可选</span>
+            <span class="api-field-comment">标题</span>
+        </dd>
+    </div>
+    <div class="alert alert-info">
+        <a name="MyBooks_Query_Api">
+        </a>
+        <h4 class="api-name">MyBooks_Query_Api 查询我的阅读历史记录</h4>
+        <dt class="request-and-response-title">响应字段</dt>
+        <dd>
+            <span class="api-field-name">list</span>
+            <span class="api-field-type">
+                <span>List&lt;</span>
+                <a href="#Book">Book</a>
+                <span>&gt;</span>
+            </span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">
+
+            </span>
+        </dd>
+    </div>
+    <div class="alert alert-success">
+        <a name="Book">
+        </a>
+        <h4 class="api-name">Book 书</h4>
+        <dd>
+            <span class="api-field-name">wordCount</span>
+            <span class="api-field-type">Long</span>
+            <span class="api-field-required">可选</span>
+            <span class="api-field-comment">字数</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">author</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">作者</span>
+        </dd>
+        <dd>
+            <span class="api-field-name">title</span>
+            <span class="api-field-type">String</span>
+            <span class="api-field-required">必填</span>
+            <span class="api-field-comment">标题</span>
+        </dd>
+    </div>
+    <div class="tail">
+        <p>
+            <span>GenerateBy</span>
+            <a href="https://github.com/xuzw/api-engine-sdk">ApiEngineSdk</a>
+            <span>2017.11.03 04:40:00.613</span>
+        </p>
+    </div>
+</body>
