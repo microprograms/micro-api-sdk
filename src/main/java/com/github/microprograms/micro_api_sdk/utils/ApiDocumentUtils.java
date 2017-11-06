@@ -80,7 +80,7 @@ public class ApiDocumentUtils {
             apiBox.child("dt").cssClass("request-and-response-title").text("请求示例");
             apiBox.child("dd").child("span").cssClass("entity-example").text(StringEscapeUtils.escapeHtml4(_buildExampleInJson(apiDefinition.getRequestDefinition()).toJSONString()));
             apiBox.child("dt").cssClass("request-and-response-title").text("响应字段");
-            _appendResponseDefinition(apiBox, apiDefinition.getResponseDefinition(), engineDefinition);
+            _appendResponseDefinition(apiBox, apiDefinition.getResponseDefinition(), apiDefinition, engineDefinition);
             apiBox.child("dt").cssClass("request-and-response-title").text("响应示例");
             apiBox.child("dd").child("span").cssClass("entity-example").text(StringEscapeUtils.escapeHtml4(_buildExampleInJson(apiDefinition.getResponseDefinition()).toJSONString()));
         }
@@ -120,13 +120,14 @@ public class ApiDocumentUtils {
         _appendEntityDefinition(apiBox, entityDefinition, engineDefinition);
     }
 
-    private static void _appendResponseDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, EngineDefinition engineDefinition) {
+    private static void _appendResponseDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, ApiDefinition apiDefinition, EngineDefinition engineDefinition) {
         List<FieldDefinition> commonFieldDefinitions = new ArrayList<>();
         commonFieldDefinitions.add(_buildFieldDefinition("错误码", "code", "int", true, MicroApiReserveResponseCodeEnum.success.getCode()));
         commonFieldDefinitions.add(_buildFieldDefinition("错误提示", "message", "String", true, MicroApiReserveResponseCodeEnum.success.getMessage()));
         if (entityDefinition == null) {
             entityDefinition = new EntityDefinition();
             entityDefinition.setFieldDefinitions(commonFieldDefinitions);
+            apiDefinition.setResponseDefinition(entityDefinition);
         } else {
             entityDefinition.getFieldDefinitions().addAll(0, commonFieldDefinitions);
         }
@@ -176,8 +177,8 @@ public class ApiDocumentUtils {
 
     private static void _appendEntityFieldTypeDefinition(HtmlBuilder type, FieldDefinition fieldDefinition, EngineDefinition engineDefinition) {
         String javaType = fieldDefinition.getJavaType();
-        if (javaType.matches("List<.+>")) {
-            String javaClassName = javaType.replaceFirst("^List<", "").replaceFirst(">$", "");
+        if (javaType.matches("(java.util.)+List<.+>")) {
+            String javaClassName = javaType.replaceFirst("^(java.util.)+List<", "").replaceFirst(">$", "");
             if (_getModelDefinition(javaClassName, engineDefinition) != null) {
                 type.child("span").text(StringEscapeUtils.escapeHtml4("List<"));
                 type.child("a").attr("href", "#" + javaClassName).text(javaClassName);
