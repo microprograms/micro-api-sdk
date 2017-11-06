@@ -109,7 +109,21 @@ public class ApiDocumentUtils {
 
     private static void _appendRequestDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, ApiDefinition apiDefinition, EngineDefinition engineDefinition) {
         List<FieldDefinition> commonFieldDefinitions = new ArrayList<>();
-        commonFieldDefinitions.add(_buildFieldDefinition("接口名（固定为" + apiDefinition.getJavaClassName() + "）", "apiName", "String", true));
+        commonFieldDefinitions.add(_buildFieldDefinition("接口名（固定为" + apiDefinition.getJavaClassName() + "）", "apiName", "String", true, apiDefinition.getJavaClassName()));
+        if (entityDefinition == null) {
+            entityDefinition = new EntityDefinition();
+            entityDefinition.setFieldDefinitions(commonFieldDefinitions);
+            apiDefinition.setRequestDefinition(entityDefinition);
+        } else {
+            entityDefinition.getFieldDefinitions().addAll(0, commonFieldDefinitions);
+        }
+        _appendEntityDefinition(apiBox, entityDefinition, engineDefinition);
+    }
+
+    private static void _appendResponseDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, EngineDefinition engineDefinition) {
+        List<FieldDefinition> commonFieldDefinitions = new ArrayList<>();
+        commonFieldDefinitions.add(_buildFieldDefinition("错误码", "code", "int", true, MicroApiReserveResponseCodeEnum.success.getCode()));
+        commonFieldDefinitions.add(_buildFieldDefinition("错误提示", "message", "String", true, MicroApiReserveResponseCodeEnum.success.getMessage()));
         if (entityDefinition == null) {
             entityDefinition = new EntityDefinition();
             entityDefinition.setFieldDefinitions(commonFieldDefinitions);
@@ -119,17 +133,12 @@ public class ApiDocumentUtils {
         _appendEntityDefinition(apiBox, entityDefinition, engineDefinition);
     }
 
-    private static void _appendResponseDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, EngineDefinition engineDefinition) {
-        List<FieldDefinition> commonFieldDefinitions = new ArrayList<>();
-        commonFieldDefinitions.add(_buildFieldDefinition("错误码", "code", "int", true));
-        commonFieldDefinitions.add(_buildFieldDefinition("错误提示", "message", "String", true));
-        if (entityDefinition == null) {
-            entityDefinition = new EntityDefinition();
-            entityDefinition.setFieldDefinitions(commonFieldDefinitions);
-        } else {
-            entityDefinition.getFieldDefinitions().addAll(0, commonFieldDefinitions);
+    private static JSONObject _buildExampleInJson(EntityDefinition entityDefinition) {
+        JSONObject json = new JSONObject(16, true);
+        for (FieldDefinition fieldDefinition : entityDefinition.getFieldDefinitions()) {
+            json.put(fieldDefinition.getName(), fieldDefinition.getExample());
         }
-        _appendEntityDefinition(apiBox, entityDefinition, engineDefinition);
+        return json;
     }
 
     private static void _appendEntityDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, EngineDefinition engineDefinition) {
@@ -195,20 +204,13 @@ public class ApiDocumentUtils {
         return null;
     }
 
-    private static JSONObject _buildExampleInJson(EntityDefinition entityDefinition) {
-        JSONObject json = new JSONObject();
-        for (FieldDefinition fieldDefinition : entityDefinition.getFieldDefinitions()) {
-            json.put(fieldDefinition.getName(), fieldDefinition.getExample());
-        }
-        return json;
-    }
-
-    private static FieldDefinition _buildFieldDefinition(String comment, String name, String javaType, boolean required) {
+    private static FieldDefinition _buildFieldDefinition(String comment, String name, String javaType, boolean required, Object example) {
         FieldDefinition fieldDefinition = new FieldDefinition();
         fieldDefinition.setComment(comment);
         fieldDefinition.setJavaType(javaType);
         fieldDefinition.setName(name);
         fieldDefinition.setRequired(required);
+        fieldDefinition.setExample(example);
         return fieldDefinition;
     }
 
