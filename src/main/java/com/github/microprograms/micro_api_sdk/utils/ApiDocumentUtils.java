@@ -15,6 +15,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum;
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_api_sdk.model.EngineDefinition;
@@ -76,8 +77,12 @@ public class ApiDocumentUtils {
             }
             apiBox.child("dt").cssClass("request-and-response-title").text("请求字段");
             _appendRequestDefinition(apiBox, apiDefinition.getRequestDefinition(), apiDefinition, engineDefinition);
+            apiBox.child("dt").cssClass("request-and-response-title").text("请求示例");
+            apiBox.child("dd").child("span").cssClass("entity-example").text(StringEscapeUtils.escapeHtml4(_buildExampleInJson(apiDefinition.getRequestDefinition()).toJSONString()));
             apiBox.child("dt").cssClass("request-and-response-title").text("响应字段");
             _appendResponseDefinition(apiBox, apiDefinition.getResponseDefinition(), engineDefinition);
+            apiBox.child("dt").cssClass("request-and-response-title").text("响应示例");
+            apiBox.child("dd").child("span").cssClass("entity-example").text(StringEscapeUtils.escapeHtml4(_buildExampleInJson(apiDefinition.getResponseDefinition()).toJSONString()));
         }
         // Model
         if (engineDefinition.getModelDefinitions() != null) {
@@ -188,6 +193,14 @@ public class ApiDocumentUtils {
             }
         }
         return null;
+    }
+
+    private static JSONObject _buildExampleInJson(EntityDefinition entityDefinition) {
+        JSONObject json = new JSONObject();
+        for (FieldDefinition fieldDefinition : entityDefinition.getFieldDefinitions()) {
+            json.put(fieldDefinition.getName(), fieldDefinition.getExample());
+        }
+        return json;
     }
 
     private static FieldDefinition _buildFieldDefinition(String comment, String name, String javaType, boolean required) {
