@@ -57,7 +57,7 @@ public class ApiDeployUtils {
         String home = engineDefinition.getDeployDefinition().getLocalMavenProjectHome();
         String cd = String.format("cd %s;", home);
         String jar = "export PATH=~/java/apache-maven-3.3.9/bin:$PATH; mvn clean package; mvn dependency:copy-dependencies -DoutputDirectory=lib; cp target/*.jar lib/;";
-        String rsync = String.format("export RSYNC_PASSWORD=pass; rsync -vzrtopg --delete --progress lib/ microprograms@%s::microprograms/%s/lib/;", engineDefinition.getServerAddressDefinition().getHost(), engineDefinition.getDeployDefinition().getRemoteJavaApplicationHome());
+        String rsync = String.format("export RSYNC_PASSWORD=pass; rsync -vzrtopg --delete --progress lib/ common@%s::common/%s/lib/;", engineDefinition.getServerAddressDefinition().getHost(), engineDefinition.getDeployDefinition().getRemoteJavaApplicationHome());
         String del = "rm -rf lib/;";
         localSsh(cd + jar + rsync + del, engineDefinition);
     }
