@@ -75,6 +75,7 @@ public class ApiDeployUtils {
     public static void start(EngineDefinition engineDefinition) throws IOException {
         String home = engineDefinition.getDeployDefinition().getRemoteJavaApplicationHome();
         remoteSsh(String.format("sudo sh %s/bin/start.sh", home), engineDefinition);
+        remoteSsh(String.format("sudo cat %s/server.nohup.out", home), engineDefinition);
     }
 
     public static void remoteSsh(String cmd, EngineDefinition engineDefinition) throws IOException {
