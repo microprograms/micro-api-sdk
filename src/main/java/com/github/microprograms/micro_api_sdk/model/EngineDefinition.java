@@ -14,6 +14,7 @@ public class EngineDefinition {
     private List<EntityDefinition> modelDefinitions;
     private ServerAddressDefinition serverAddressDefinition;
     private ShowdocDefinition showdocDefinition;
+    private DeployDefinition deployDefinition;
 
     public String getComment() {
         return comment;
@@ -85,5 +86,13 @@ public class EngineDefinition {
 
     public void setShowdocDefinition(ShowdocDefinition showdocDefinition) {
         this.showdocDefinition = showdocDefinition;
+    }
+
+    public DeployDefinition getDeployDefinition() {
+        return deployDefinition;
+    }
+
+    public void setDeployDefinition(DeployDefinition deployDefinition) {
+        this.deployDefinition = deployDefinition;
     }
 }
