@@ -1,7 +1,9 @@
 package com.github.microprograms.micro_api_sdk.utils;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum;
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_api_sdk.model.EngineDefinition;
+import com.github.microprograms.micro_api_sdk.model.ErrorCodeDefinition;
 import com.github.microprograms.micro_api_sdk.model.ServerAddressDefinition;
 import com.github.microprograms.micro_api_sdk.model.ShowdocDefinition;
 import com.github.microprograms.micro_entity_definition_runtime.model.EntityDefinition;
@@ -21,26 +24,68 @@ import com.jcabi.http.request.JdkRequest;
 public class ApiDocumentForShowdocUtils {
 
     public static void update(EngineDefinition engineDefinition) throws IOException {
-        ShowdocDefinition showdocDefinition = engineDefinition.getShowdocDefinition();
-        for (ApiDefinition apiDefinition : engineDefinition.getApiDefinitions()) {
-            String comment = apiDefinition.getComment();
-            Map<String, String> req = new HashMap<>();
-            req.put("api_key", showdocDefinition.getApiKey());
-            req.put("api_token", showdocDefinition.getApiToken());
-            req.put("cat_name", comment.replaceFirst("\\s*-.*$", ""));
-            req.put("cat_name_sub", "");
-            req.put("page_title", comment.replaceFirst("^.*-\\s*", ""));
-            req.put("page_content", _buildMarkdown(apiDefinition, engineDefinition));
-            req.put("s_number", "");
-            String response = new JdkRequest(showdocDefinition.getUrl()).body().formParams(req).back().method(Request.POST).fetch().body();
-            JSONObject resp = JSON.parseObject(response);
-            if (resp.getIntValue("error_code") != 0) {
-                throw new RuntimeException(response);
-            }
+        _updateHomePage(engineDefinition);
+        _updateErrorCodePage(engineDefinition);
+        _updateApiPages(engineDefinition);
+    }
+
+    private static void _updatePage(String catName, String pageTitle, String pageContent, int sNumber, ShowdocDefinition showdocDefinition) throws IOException {
+        Map<String, String> req = new HashMap<>();
+        req.put("api_key", showdocDefinition.getApiKey());
+        req.put("api_token", showdocDefinition.getApiToken());
+        req.put("cat_name", catName);
+        req.put("cat_name_sub", "");
+        req.put("page_title", pageTitle);
+        req.put("page_content", pageContent);
+        req.put("s_number", String.valueOf(sNumber));
+        String response = new JdkRequest(showdocDefinition.getUrl()).body().formParams(req).back().method(Request.POST).fetch().body();
+        JSONObject resp = JSON.parseObject(response);
+        if (resp.getIntValue("error_code") != 0) {
+            throw new RuntimeException(response);
         }
     }
 
-    private static String _buildMarkdown(ApiDefinition apiDefinition, EngineDefinition engineDefinition) {
+    private static void _updateHomePage(EngineDefinition engineDefinition) throws IOException {
+        _updatePage("", "说明", _buildMarkdownForHomePage(engineDefinition), 1, engineDefinition.getShowdocDefinition());
+    }
+
+    private static void _updateErrorCodePage(EngineDefinition engineDefinition) throws IOException {
+        _updatePage("", "全局错误码", _buildMarkdownForErrorCode(engineDefinition), 2, engineDefinition.getShowdocDefinition());
+    }
+
+    private static void _updateApiPages(EngineDefinition engineDefinition) throws IOException {
+        for (ApiDefinition apiDefinition : engineDefinition.getApiDefinitions()) {
+            String comment = apiDefinition.getComment();
+            String catName = comment.replaceFirst("\\s*-.*$", "");
+            String pageTitle = comment.replaceFirst("^.*-\\s*", "");
+            String pageContent = _buildMarkdownForApi(apiDefinition, engineDefinition);
+            _updatePage(catName, pageTitle, pageContent, 99, engineDefinition.getShowdocDefinition());
+        }
+    }
+
+    private static String _buildMarkdownForHomePage(EngineDefinition engineDefinition) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("#### ").append(engineDefinition.getComment()).append("\n");
+        sb.append("# ").append(engineDefinition.getVersion()).append("\n");
+        sb.append("GenerateBy [MicroApiSdk](https://github.com/microprograms/micro-api-sdk)").append(" ").append(_getTime()).append("\n");
+        return sb.toString();
+    }
+
+    private static String _getTime() {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+    }
+
+    private static String _buildMarkdownForErrorCode(EngineDefinition engineDefinition) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("|错误码|错误解释|").append("\n");
+        sb.append("|-----|-----|").append("\n");
+        for (ErrorCodeDefinition x : engineDefinition.getErrorCodeDefinitions()) {
+            sb.append("|").append(x.getCode()).append("|").append(x.getMessage()).append("|").append("\n");
+        }
+        return sb.toString();
+    }
+
+    private static String _buildMarkdownForApi(ApiDefinition apiDefinition, EngineDefinition engineDefinition) {
         StringBuffer sb = new StringBuffer();
         sb.append("**简要描述：**").append("\n\n");
         sb.append("- ").append(apiDefinition.getComment()).append("\n\n");
