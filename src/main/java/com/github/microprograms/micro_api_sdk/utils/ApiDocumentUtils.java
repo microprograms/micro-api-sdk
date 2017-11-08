@@ -76,11 +76,13 @@ public class ApiDocumentUtils {
                 apiBox.child("h5").cssClass("api-name").text(StringEscapeUtils.escapeHtml4(apiDefinition.getDescription()));
             }
             apiBox.child("dt").cssClass("request-and-response-title").text("请求字段");
-            _appendRequestDefinition(apiBox, apiDefinition.getRequestDefinition(), apiDefinition, engineDefinition);
+            _appendCommonRequestFieldDefinitions(apiDefinition);
+            _appendEntityDefinition(apiBox, apiDefinition.getRequestDefinition(), engineDefinition);
             apiBox.child("dt").cssClass("request-and-response-title").text("请求示例");
             apiBox.child("dd").child("span").cssClass("entity-example").text(StringEscapeUtils.escapeHtml4(_buildExampleInJson(apiDefinition.getRequestDefinition()).toJSONString()));
             apiBox.child("dt").cssClass("request-and-response-title").text("响应字段");
-            _appendResponseDefinition(apiBox, apiDefinition.getResponseDefinition(), apiDefinition, engineDefinition);
+            _appendCommonResponseFieldDefinitions(apiDefinition);
+            _appendEntityDefinition(apiBox, apiDefinition.getResponseDefinition(), engineDefinition);
             apiBox.child("dt").cssClass("request-and-response-title").text("响应示例");
             apiBox.child("dd").child("span").cssClass("entity-example").text(StringEscapeUtils.escapeHtml4(_buildExampleInJson(apiDefinition.getResponseDefinition()).toJSONString()));
         }
@@ -107,31 +109,29 @@ public class ApiDocumentUtils {
         return root.build();
     }
 
-    private static void _appendRequestDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, ApiDefinition apiDefinition, EngineDefinition engineDefinition) {
+    private static void _appendCommonRequestFieldDefinitions(ApiDefinition apiDefinition) {
         List<FieldDefinition> commonFieldDefinitions = new ArrayList<>();
-        commonFieldDefinitions.add(_buildFieldDefinition("接口名（固定为" + apiDefinition.getJavaClassName() + "）", "apiName", "String", true, apiDefinition.getJavaClassName()));
-        if (entityDefinition == null) {
-            entityDefinition = new EntityDefinition();
-            entityDefinition.setFieldDefinitions(commonFieldDefinitions);
-            apiDefinition.setRequestDefinition(entityDefinition);
+        commonFieldDefinitions.add(_buildFieldDefinition("接口名 - 固定为" + apiDefinition.getJavaClassName(), "apiName", "String", true, apiDefinition.getJavaClassName()));
+        if (apiDefinition.getRequestDefinition() == null) {
+            EntityDefinition requestDefinition = new EntityDefinition();
+            requestDefinition.setFieldDefinitions(commonFieldDefinitions);
+            apiDefinition.setRequestDefinition(requestDefinition);
         } else {
-            entityDefinition.getFieldDefinitions().addAll(0, commonFieldDefinitions);
+            apiDefinition.getRequestDefinition().getFieldDefinitions().addAll(0, commonFieldDefinitions);
         }
-        _appendEntityDefinition(apiBox, entityDefinition, engineDefinition);
     }
 
-    private static void _appendResponseDefinition(HtmlBuilder apiBox, EntityDefinition entityDefinition, ApiDefinition apiDefinition, EngineDefinition engineDefinition) {
+    private static void _appendCommonResponseFieldDefinitions(ApiDefinition apiDefinition) {
         List<FieldDefinition> commonFieldDefinitions = new ArrayList<>();
-        commonFieldDefinitions.add(_buildFieldDefinition("错误码", "code", "int", true, MicroApiReserveResponseCodeEnum.success.getCode()));
+        commonFieldDefinitions.add(_buildFieldDefinition("错误码(0正常,非0错误)", "code", "Integer", true, MicroApiReserveResponseCodeEnum.success.getCode()));
         commonFieldDefinitions.add(_buildFieldDefinition("错误提示", "message", "String", true, MicroApiReserveResponseCodeEnum.success.getMessage()));
-        if (entityDefinition == null) {
-            entityDefinition = new EntityDefinition();
-            entityDefinition.setFieldDefinitions(commonFieldDefinitions);
-            apiDefinition.setResponseDefinition(entityDefinition);
+        if (apiDefinition.getResponseDefinition() == null) {
+            EntityDefinition responseDefinition = new EntityDefinition();
+            responseDefinition.setFieldDefinitions(commonFieldDefinitions);
+            apiDefinition.setResponseDefinition(responseDefinition);
         } else {
-            entityDefinition.getFieldDefinitions().addAll(0, commonFieldDefinitions);
+            apiDefinition.getResponseDefinition().getFieldDefinitions().addAll(0, commonFieldDefinitions);
         }
-        _appendEntityDefinition(apiBox, entityDefinition, engineDefinition);
     }
 
     private static JSONObject _buildExampleInJson(EntityDefinition entityDefinition) {

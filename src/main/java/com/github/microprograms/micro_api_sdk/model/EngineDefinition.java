@@ -13,6 +13,7 @@ public class EngineDefinition {
     private List<ErrorCodeDefinition> errorCodeDefinitions;
     private List<EntityDefinition> modelDefinitions;
     private ServerAddressDefinition serverAddressDefinition;
+    private ShowdocDefinition showdocDefinition;
 
     public String getComment() {
         return comment;
@@ -76,5 +77,13 @@ public class EngineDefinition {
 
     public void setServerAddressDefinition(ServerAddressDefinition serverAddressDefinition) {
         this.serverAddressDefinition = serverAddressDefinition;
+    }
+
+    public ShowdocDefinition getShowdocDefinition() {
+        return showdocDefinition;
+    }
+
+    public void setShowdocDefinition(ShowdocDefinition showdocDefinition) {
+        this.showdocDefinition = showdocDefinition;
     }
 }
