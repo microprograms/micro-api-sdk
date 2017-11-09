@@ -1,7 +1,9 @@
 package com.github.microprograms.micro_api_sdk.utils;
 
 import java.io.IOException;
+import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,12 +56,15 @@ public class ApiDeployUtils {
     }
 
     private static void deployLib(EngineDefinition engineDefinition) throws IOException {
-        String home = engineDefinition.getDeployDefinition().getLocalMavenProjectHome();
-        String cd = String.format("cd %s;", home);
-        String jar = "export PATH=~/java/apache-maven-3.3.9/bin:$PATH; mvn clean package; mvn dependency:copy-dependencies -DoutputDirectory=lib; cp target/*.jar lib/;";
-        String rsync = String.format("export RSYNC_PASSWORD=pass; rsync -vzrtopg --delete --progress lib/ common@%s::common/%s/lib/;", engineDefinition.getServerAddressDefinition().getHost(), engineDefinition.getDeployDefinition().getRemoteJavaApplicationHome());
+        String localHome = engineDefinition.getDeployDefinition().getLocalMavenProjectHome();
+        String remoteHome = engineDefinition.getDeployDefinition().getRemoteJavaApplicationHome();
+        String remoteHost = engineDefinition.getServerAddressDefinition().getHost();
+        String cd = String.format("cd %s;", localHome);
+        String setenv = "sh ~/.micro_api_sdk/setenv.sh;";
+        String jar = "mvn clean package; mvn dependency:copy-dependencies -DoutputDirectory=lib; cp target/*.jar lib/;";
+        String rsync = String.format("export RSYNC_PASSWORD=pass; rsync -vzrtopg --delete --progress lib/ common@%s::common/%s/lib/;", remoteHost, remoteHome);
         String del = "rm -rf lib/;";
-        localSsh(cd + jar + rsync + del, engineDefinition);
+        localSsh(StringUtils.join(Arrays.asList(cd, setenv, jar, rsync, del), " "), engineDefinition);
     }
 
     public static void restart(EngineDefinition engineDefinition) throws IOException {
@@ -82,13 +87,13 @@ public class ApiDeployUtils {
         DeployDefinition deployDefinition = engineDefinition.getDeployDefinition();
         Shell shell = new SshByPassword(engineDefinition.getServerAddressDefinition().getHost(), deployDefinition.getRemoteSshPort(), deployDefinition.getRemoteSshUser(), deployDefinition.getRemoteSshPassword());
         String stdout = new Shell.Plain(shell).exec(cmd);
-        log.info("remoteSsh> " + stdout);
+        log.info("remoteSsh> " + cmd + "\n" + stdout);
     }
 
     public static void localSsh(String cmd, EngineDefinition engineDefinition) throws IOException {
         DeployDefinition deployDefinition = engineDefinition.getDeployDefinition();
         Shell shell = new SshByPassword("localhost", deployDefinition.getLocalSshPort(), deployDefinition.getLocalSshUser(), deployDefinition.getLocalSshPassword());
         String stdout = new Shell.Plain(shell).exec(cmd);
-        log.info("localSsh> " + stdout);
+        log.info("localSsh> " + cmd + "\n" + stdout);
     }
 }
