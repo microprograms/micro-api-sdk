@@ -56,7 +56,7 @@ public class ApiDocumentForShowdocUtils {
     private static void _updateApiPages(EngineDefinition engineDefinition) throws IOException {
         for (ApiDefinition apiDefinition : engineDefinition.getApiDefinitions()) {
             String comment = apiDefinition.getComment();
-            String catName = comment.replaceFirst("\\s*-.*$", "");
+            String catName = comment.indexOf('-') == -1 ? "" : comment.replaceFirst("\\s*-.*$", "");
             String pageTitle = comment.replaceFirst("^.*-\\s*", "");
             String pageContent = _buildMarkdownForApi(apiDefinition, engineDefinition);
             _updatePage(catName, pageTitle, pageContent, 99, engineDefinition.getShowdocDefinition());
