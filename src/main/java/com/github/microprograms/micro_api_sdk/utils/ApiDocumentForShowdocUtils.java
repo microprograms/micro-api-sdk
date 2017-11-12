@@ -169,7 +169,7 @@ public class ApiDocumentForShowdocUtils {
         case "String":
             return "string";
         default:
-            return javaType.replaceFirst("java.util.", "").replaceFirst("<", "&lt;").replaceFirst(">", "&gt;");
+            return javaType.replaceFirst(".*\\.", "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
         }
     }
 
@@ -179,10 +179,5 @@ public class ApiDocumentForShowdocUtils {
             json.put(fieldDefinition.getName(), fieldDefinition.getExample());
         }
         return json;
-    }
-
-    public static void main(String[] args) throws Exception {
-        EngineDefinition engineDefinition = ApiEngineGeneratorUtils.buildEngineDefinition("design/public-api.json");
-        update(engineDefinition);
     }
 }
