@@ -13,6 +13,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
@@ -44,6 +46,7 @@ import com.github.microprograms.micro_api_runtime.model.ResponseCode;
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_api_sdk.model.EngineDefinition;
 import com.github.microprograms.micro_api_sdk.model.ErrorCodeDefinition;
+import com.github.microprograms.micro_api_sdk.model.MixinDefinition;
 import com.github.microprograms.micro_entity_definition_runtime.annotation.Comment;
 import com.github.microprograms.micro_entity_definition_runtime.annotation.Description;
 import com.github.microprograms.micro_entity_definition_runtime.annotation.MicroEntityAnnotation;
@@ -279,10 +282,62 @@ public class ApiEngineGeneratorUtils {
     }
 
     public static EngineDefinition buildEngineDefinition(String engineConfigFilePath) throws IOException {
-        FileInputStream input = new FileInputStream(engineConfigFilePath);
-        List<String> lines = IOUtils.readLines(input, encoding);
-        IOUtils.closeQuietly(input);
-        String json = StringUtils.join(lines, "");
-        return JSON.parseObject(json, EngineDefinition.class);
+        String json = readFile(engineConfigFilePath);
+        return parseMixin(JSON.parseObject(json, EngineDefinition.class));
+    }
+
+    public static String readFile(String file) throws IOException {
+        FileInputStream input = null;
+        try {
+            input = new FileInputStream(file);
+            List<String> lines = IOUtils.readLines(input, encoding);
+            return StringUtils.join(lines, "");
+        } catch (IOException e) {
+            throw e;
+        } finally {
+            IOUtils.closeQuietly(input);
+        }
+    }
+
+    private static EngineDefinition parseMixin(EngineDefinition engineDefinition) throws IOException {
+        JSONObject root = (JSONObject) JSON.toJSON(engineDefinition);
+        List<MixinDefinition> mixinDefinitions = engineDefinition.getMixinDefinitions();
+        if (mixinDefinitions != null && !mixinDefinitions.isEmpty()) {
+            for (MixinDefinition x : mixinDefinitions) {
+                String sourceString = x.getSource();
+                String sourceFilePath = sourceString.substring(0, sourceString.lastIndexOf("#"));
+                String sourceLocation = sourceString.substring(sourceString.lastIndexOf("#") + 1);
+                JSONObject sourceJson = JSON.parseObject(readFile(sourceFilePath));
+                Object source = getObjectByLocation(sourceJson, sourceLocation);
+                String targetLocation = x.getTarget();
+                Object target = getObjectByLocation(root, targetLocation);
+                mixin(source, target);
+            }
+        }
+        return JSON.toJavaObject(root, EngineDefinition.class);
+    }
+
+    private static Object getObjectByLocation(JSONObject jsonObject, String location) {
+        if (StringUtils.isBlank(location)) {
+            return jsonObject;
+        }
+        int indexOfDot = location.indexOf(".");
+        if (indexOfDot == -1) {
+            return jsonObject.get(location);
+        }
+        String key = location.substring(0, indexOfDot);
+        String remainingKey = location.substring(indexOfDot + 1);
+        return getObjectByLocation(jsonObject.getJSONObject(key), remainingKey);
+    }
+
+    private static void mixin(Object source, Object target) {
+        if (target instanceof JSONObject) {
+            JSONObject jsonObject = (JSONObject) target;
+            jsonObject.putAll((JSONObject) source);
+        }
+        if (target instanceof JSONArray) {
+            JSONArray jsonArray = (JSONArray) target;
+            jsonArray.addAll((JSONArray) source);
+        }
     }
 }

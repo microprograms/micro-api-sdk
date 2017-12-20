@@ -15,6 +15,7 @@ public class EngineDefinition {
     private ServerAddressDefinition serverAddressDefinition;
     private ShowdocDefinition showdocDefinition;
     private DeployDefinition deployDefinition;
+    private List<MixinDefinition> mixinDefinitions;
 
     public String getComment() {
         return comment;
@@ -94,5 +95,13 @@ public class EngineDefinition {
 
     public void setDeployDefinition(DeployDefinition deployDefinition) {
         this.deployDefinition = deployDefinition;
+    }
+
+    public List<MixinDefinition> getMixinDefinitions() {
+        return mixinDefinitions;
+    }
+
+    public void setMixinDefinitions(List<MixinDefinition> mixinDefinitions) {
+        this.mixinDefinitions = mixinDefinitions;
     }
 }
