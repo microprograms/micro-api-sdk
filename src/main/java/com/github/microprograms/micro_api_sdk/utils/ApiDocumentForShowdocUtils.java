@@ -26,6 +26,7 @@ public class ApiDocumentForShowdocUtils {
     public static void update(EngineDefinition engineDefinition) throws IOException {
         _updateHomePage(engineDefinition);
         _updateErrorCodePage(engineDefinition);
+        _updateEntityDefinitionPage(engineDefinition);
         _updateApiPages(engineDefinition);
     }
 
@@ -51,6 +52,10 @@ public class ApiDocumentForShowdocUtils {
 
     private static void _updateErrorCodePage(EngineDefinition engineDefinition) throws IOException {
         _updatePage("", "全局错误码", _buildMarkdownForErrorCode(engineDefinition), 2, engineDefinition.getShowdocDefinition());
+    }
+
+    private static void _updateEntityDefinitionPage(EngineDefinition engineDefinition) throws IOException {
+        _updatePage("", "实体定义", _buildMarkdownForEntityDefinition(engineDefinition), 3, engineDefinition.getShowdocDefinition());
     }
 
     private static void _updateApiPages(EngineDefinition engineDefinition) throws IOException {
@@ -81,6 +86,19 @@ public class ApiDocumentForShowdocUtils {
         sb.append("|-----|-----|").append("\n");
         for (ErrorCodeDefinition x : engineDefinition.getErrorCodeDefinitions()) {
             sb.append("|").append(x.getCode()).append("|").append(x.getMessage()).append("|").append("\n");
+        }
+        return sb.toString();
+    }
+
+    private static String _buildMarkdownForEntityDefinition(EngineDefinition engineDefinition) {
+        StringBuffer sb = new StringBuffer();
+        for (EntityDefinition entityDefinition : engineDefinition.getModelDefinitions()) {
+            sb.append(String.format("**%s**", entityDefinition.getComment())).append("\n\n");
+            sb.append("|字段名|类型|说明|").append("\n");
+            sb.append("|-----|-----|-----|").append("\n");
+            for (FieldDefinition x : entityDefinition.getFieldDefinitions()) {
+                sb.append("|").append(x.getName()).append("|").append(_getType(x.getJavaType())).append("|").append(x.getComment()).append("\n");
+            }
         }
         return sb.toString();
     }
