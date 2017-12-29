@@ -93,7 +93,7 @@ public class ApiDocumentForShowdocUtils {
     private static String _buildMarkdownForEntityDefinition(EngineDefinition engineDefinition) {
         StringBuffer sb = new StringBuffer();
         for (EntityDefinition entityDefinition : engineDefinition.getModelDefinitions()) {
-            sb.append(String.format("**%s**", entityDefinition.getComment())).append("\n\n");
+            sb.append(String.format("**%s（%s）**", entityDefinition.getComment(), entityDefinition.getJavaClassName())).append("\n\n");
             sb.append("|字段名|类型|说明|").append("\n");
             sb.append("|-----|-----|-----|").append("\n");
             for (FieldDefinition x : entityDefinition.getFieldDefinitions()) {
