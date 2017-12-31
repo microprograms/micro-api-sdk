@@ -51,6 +51,7 @@ public class ApiDocumentForShowdocUtils {
     }
 
     private static void _updateErrorCodePage(EngineDefinition engineDefinition) throws IOException {
+        _appendCommonErrorCodeDefinitions(engineDefinition);
         _updatePage("", "全局错误码", _buildMarkdownForErrorCode(engineDefinition), 2, engineDefinition.getShowdocDefinition());
     }
 
@@ -153,6 +154,20 @@ public class ApiDocumentForShowdocUtils {
         } else {
             apiDefinition.getRequestDefinition().getFieldDefinitions().addAll(0, commonFieldDefinitions);
         }
+    }
+
+    private static void _appendCommonErrorCodeDefinitions(EngineDefinition engineDefinition) {
+        if (engineDefinition.getErrorCodeDefinitions() == null) {
+            engineDefinition.setErrorCodeDefinitions(new ArrayList<>());
+        }
+        List<ErrorCodeDefinition> list = new ArrayList<>();
+        for (MicroApiReserveResponseCodeEnum x : MicroApiReserveResponseCodeEnum.values()) {
+            ErrorCodeDefinition errorCodeDefinition = new ErrorCodeDefinition();
+            errorCodeDefinition.setCode(x.getCode());
+            errorCodeDefinition.setMessage("系统 - " + x.getMessage());
+            list.add(errorCodeDefinition);
+        }
+        engineDefinition.getErrorCodeDefinitions().addAll(0, list);
     }
 
     private static void _appendCommonResponseFieldDefinitions(ApiDefinition apiDefinition) {
