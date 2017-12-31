@@ -19,6 +19,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -28,6 +29,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.AssignExpr.Operator;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -36,7 +38,7 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.microprograms.micro_api_runtime.annotation.MicroApiAnnotation;
@@ -197,6 +199,8 @@ public class ApiEngineGeneratorUtils {
             ClassOrInterfaceDeclaration apiClassDeclaration = cu.addClass(apiDefinition.getJavaClassName(), Modifier.PUBLIC);
             apiClassDeclaration.addAndGetAnnotation(Comment.class).addPair("value", "\"" + apiDefinition.getComment() + "\"");
             _fillMicroApiAnnotation(apiClassDeclaration, apiDefinition, engineDefinition);
+            cu.addImport("com.github.microprograms.micro_api_runtime.exception.MicroApiExecuteException");
+            cu.addImport("com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum");
             _fillExecuteMethodDeclaration(apiClassDeclaration, apiDefinition);
             _fillReqAndRespInnerClassDeclaration(apiClassDeclaration, apiDefinition);
         }
@@ -243,7 +247,9 @@ public class ApiEngineGeneratorUtils {
         } else {
             blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Response"), "resp"), new ObjectCreationExpr().setType(new ClassOrInterfaceType("Response")), Operator.ASSIGN));
         }
-        blockStmt.addStatement(new ReturnStmt(new NameExpr("resp")));
+        NodeList<Expression> arguments = new NodeList<>();
+        arguments.add(new NameExpr("MicroApiReserveResponseCodeEnum.api_not_implemented_exception"));
+        blockStmt.addStatement(new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType("MicroApiExecuteException"), arguments)));
         executeMethodDeclaration.setBody(blockStmt);
     }
 
