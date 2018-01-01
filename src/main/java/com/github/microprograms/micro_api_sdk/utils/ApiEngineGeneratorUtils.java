@@ -32,19 +32,25 @@ import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.microprograms.micro_api_runtime.annotation.MicroApiAnnotation;
+import com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum;
+import com.github.microprograms.micro_api_runtime.exception.MicroApiExecuteException;
 import com.github.microprograms.micro_api_runtime.model.Request;
 import com.github.microprograms.micro_api_runtime.model.Response;
 import com.github.microprograms.micro_api_runtime.model.ResponseCode;
+import com.github.microprograms.micro_api_runtime.utils.MicroApiUtils;
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_api_sdk.model.EngineDefinition;
 import com.github.microprograms.micro_api_sdk.model.ErrorCodeDefinition;
@@ -62,6 +68,15 @@ import io.github.lukehutch.fastclasspathscanner.matchprocessor.ClassAnnotationMa
 public class ApiEngineGeneratorUtils {
     private static final Charset encoding = Charset.forName("utf8");
     public static final String error_code_enum_class_name = "ErrorCodeEnum";
+    private static Callback callback = new DefaultCallback();
+
+    public static Callback getCallback() {
+        return callback;
+    }
+
+    public static void setCallback(Callback callback) {
+        ApiEngineGeneratorUtils.callback = callback;
+    }
 
     public static void deleteModelJavaFiles(String srcFolder, EngineDefinition engineDefinition) throws IOException {
         new FastClasspathScanner(engineDefinition.getJavaPackageName()).matchClassesWithAnnotation(MicroEntityAnnotation.class, new ClassAnnotationMatchProcessor() {
@@ -185,6 +200,8 @@ public class ApiEngineGeneratorUtils {
             apiClassDeclaration.addAndGetAnnotation(Comment.class).addPair("value", "\"" + apiDefinition.getComment() + "\"");
             _deleteMicroApiAnnotation(apiClassDeclaration);
             _fillMicroApiAnnotation(apiClassDeclaration, apiDefinition, engineDefinition);
+            _deleteExecuteMethodDeclaration(apiClassDeclaration);
+            callback.fillExecuteMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
             _deleteRequestAndResponseClassDeclaration(apiClassDeclaration);
             _fillReqAndRespInnerClassDeclaration(apiClassDeclaration, apiDefinition);
         } else {
@@ -199,9 +216,8 @@ public class ApiEngineGeneratorUtils {
             ClassOrInterfaceDeclaration apiClassDeclaration = cu.addClass(apiDefinition.getJavaClassName(), Modifier.PUBLIC);
             apiClassDeclaration.addAndGetAnnotation(Comment.class).addPair("value", "\"" + apiDefinition.getComment() + "\"");
             _fillMicroApiAnnotation(apiClassDeclaration, apiDefinition, engineDefinition);
-            cu.addImport("com.github.microprograms.micro_api_runtime.exception.MicroApiExecuteException");
-            cu.addImport("com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum");
-            _fillExecuteMethodDeclaration(apiClassDeclaration, apiDefinition);
+            callback.fillExecuteMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
+            callback.fillCoreMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
             _fillReqAndRespInnerClassDeclaration(apiClassDeclaration, apiDefinition);
         }
         OutputStream output = new FileOutputStream(javaFile);
@@ -233,26 +249,6 @@ public class ApiEngineGeneratorUtils {
         }
     }
 
-    private static void _fillExecuteMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition) {
-        MethodDeclaration executeMethodDeclaration = apiClassDeclaration.addMethod("execute", Modifier.PUBLIC, Modifier.STATIC);
-        executeMethodDeclaration.setType(Response.class);
-        executeMethodDeclaration.addParameter(Request.class, "request");
-        executeMethodDeclaration.addThrownException(Exception.class);
-        BlockStmt blockStmt = new BlockStmt();
-        if (apiDefinition.getRequestDefinition() != null) {
-            blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Req"), "req"), new CastExpr(new ClassOrInterfaceType("Req"), new NameExpr("request")), Operator.ASSIGN));
-        }
-        if (apiDefinition.getResponseDefinition() != null) {
-            blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Resp"), "resp"), new ObjectCreationExpr().setType(new ClassOrInterfaceType("Resp")), Operator.ASSIGN));
-        } else {
-            blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Response"), "resp"), new ObjectCreationExpr().setType(new ClassOrInterfaceType("Response")), Operator.ASSIGN));
-        }
-        NodeList<Expression> arguments = new NodeList<>();
-        arguments.add(new NameExpr("MicroApiReserveResponseCodeEnum.api_not_implemented_exception"));
-        blockStmt.addStatement(new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType("MicroApiExecuteException"), arguments)));
-        executeMethodDeclaration.setBody(blockStmt);
-    }
-
     private static void _deleteMicroApiAnnotation(TypeDeclaration<?> typeDeclaration) {
         Optional<AnnotationExpr> optional = typeDeclaration.getAnnotationByClass(MicroApiAnnotation.class);
         if (optional.isPresent()) {
@@ -269,6 +265,12 @@ public class ApiEngineGeneratorUtils {
             if (x.getExtendedTypes().contains(new ClassOrInterfaceType("Request")) || x.getExtendedTypes().contains(new ClassOrInterfaceType("Response"))) {
                 apiClassDeclaration.remove(x);
             }
+        }
+    }
+
+    private static void _deleteExecuteMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration) {
+        for (MethodDeclaration x : apiClassDeclaration.getMethodsBySignature("execute", "Request")) {
+            x.remove();
         }
     }
 
@@ -344,6 +346,59 @@ public class ApiEngineGeneratorUtils {
         if (target instanceof JSONArray) {
             JSONArray jsonArray = (JSONArray) target;
             jsonArray.addAll((JSONArray) source);
+        }
+    }
+
+    public static interface Callback {
+        void fillExecuteMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu);
+
+        void fillCoreMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu);
+    }
+
+    public static class DefaultCallback implements Callback {
+
+        @Override
+        public void fillExecuteMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+            cu.addImport(MicroApiUtils.class.getName());
+            MethodDeclaration executeMethodDeclaration = apiClassDeclaration.addMethod("execute", Modifier.PUBLIC, Modifier.STATIC);
+            executeMethodDeclaration.setType(Response.class);
+            executeMethodDeclaration.addParameter(Request.class, "request");
+            executeMethodDeclaration.addThrownException(Exception.class);
+            BlockStmt blockStmt = new BlockStmt();
+            if (apiDefinition.getRequestDefinition() != null) {
+                blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Req"), "req"), new CastExpr(new ClassOrInterfaceType("Req"), new NameExpr("request")), Operator.ASSIGN));
+                for (FieldDefinition x : apiDefinition.getRequestDefinition().getFieldDefinitions()) {
+                    if (x.getRequired()) {
+                        NodeList<Expression> arguments = new NodeList<>();
+                        arguments.add(new MethodCallExpr(new NameExpr("req"), "get" + StringUtils.capitalize(x.getName())));
+                        arguments.add(new StringLiteralExpr(x.getName()));
+                        blockStmt.addStatement(new MethodCallExpr(new NameExpr(MicroApiUtils.class.getSimpleName()), new SimpleName("throwExceptionIfBlank"), arguments));
+                    }
+                }
+            } else {
+                blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Request"), "req"), new NameExpr("request"), Operator.ASSIGN));
+            }
+            if (apiDefinition.getResponseDefinition() != null) {
+                blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Resp"), "resp"), new ObjectCreationExpr().setType(new ClassOrInterfaceType("Resp")), Operator.ASSIGN));
+            } else {
+                blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Response"), "resp"), new ObjectCreationExpr().setType(new ClassOrInterfaceType("Response")), Operator.ASSIGN));
+            }
+            blockStmt.addStatement(new MethodCallExpr(null, new SimpleName("core"), NodeList.nodeList(new NameExpr("req"), new NameExpr("resp"))));
+            blockStmt.addStatement(new ReturnStmt(new NameExpr("resp")));
+            executeMethodDeclaration.setBody(blockStmt);
+        }
+
+        @Override
+        public void fillCoreMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+            cu.addImport(MicroApiExecuteException.class.getName());
+            cu.addImport(MicroApiReserveResponseCodeEnum.class.getName());
+            MethodDeclaration methodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
+            methodDeclaration.addParameter(new ClassOrInterfaceType(apiDefinition.getRequestDefinition() != null ? "Req" : "Request"), "req");
+            methodDeclaration.addParameter(new ClassOrInterfaceType(apiDefinition.getResponseDefinition() != null ? "Resp" : "Response"), "resp");
+            methodDeclaration.addThrownException(Exception.class);
+            BlockStmt blockStmt = new BlockStmt();
+            blockStmt.addStatement(new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.api_not_implemented_exception.name())))));
+            methodDeclaration.setBody(blockStmt);
         }
     }
 }
