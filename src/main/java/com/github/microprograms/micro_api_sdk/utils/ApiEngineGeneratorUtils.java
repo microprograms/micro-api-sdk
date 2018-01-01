@@ -359,7 +359,6 @@ public class ApiEngineGeneratorUtils {
 
         @Override
         public void fillExecuteMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
-            cu.addImport(MicroApiUtils.class.getName());
             MethodDeclaration executeMethodDeclaration = apiClassDeclaration.addMethod("execute", Modifier.PUBLIC, Modifier.STATIC);
             executeMethodDeclaration.setType(Response.class);
             executeMethodDeclaration.addParameter(Request.class, "request");
@@ -369,6 +368,7 @@ public class ApiEngineGeneratorUtils {
                 blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Req"), "req"), new CastExpr(new ClassOrInterfaceType("Req"), new NameExpr("request")), Operator.ASSIGN));
                 for (FieldDefinition x : apiDefinition.getRequestDefinition().getFieldDefinitions()) {
                     if (x.getRequired()) {
+                        cu.addImport(MicroApiUtils.class.getName());
                         NodeList<Expression> arguments = new NodeList<>();
                         arguments.add(new MethodCallExpr(new NameExpr("req"), "get" + StringUtils.capitalize(x.getName())));
                         arguments.add(new StringLiteralExpr(x.getName()));
