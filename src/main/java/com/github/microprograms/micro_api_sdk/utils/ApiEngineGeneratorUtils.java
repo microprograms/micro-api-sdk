@@ -216,8 +216,8 @@ public class ApiEngineGeneratorUtils {
             ClassOrInterfaceDeclaration apiClassDeclaration = cu.addClass(apiDefinition.getJavaClassName(), Modifier.PUBLIC);
             apiClassDeclaration.addAndGetAnnotation(Comment.class).addPair("value", "\"" + apiDefinition.getComment() + "\"");
             _fillMicroApiAnnotation(apiClassDeclaration, apiDefinition, engineDefinition);
-            callback.fillExecuteMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
             callback.fillCoreMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
+            callback.fillExecuteMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
             _fillReqAndRespInnerClassDeclaration(apiClassDeclaration, apiDefinition);
         }
         OutputStream output = new FileOutputStream(javaFile);
