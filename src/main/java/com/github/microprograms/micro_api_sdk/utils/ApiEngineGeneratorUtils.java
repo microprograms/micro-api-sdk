@@ -397,6 +397,7 @@ public class ApiEngineGeneratorUtils {
             methodDeclaration.addParameter(new ClassOrInterfaceType(apiDefinition.getResponseDefinition() != null ? "Resp" : "Response"), "resp");
             methodDeclaration.addThrownException(Exception.class);
             BlockStmt blockStmt = new BlockStmt();
+            blockStmt.addStatement(new VariableDeclarationExpr(new ClassOrInterfaceType(Object.class.getSimpleName()), "doSomeThingHere"));
             blockStmt.addStatement(new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.api_not_implemented_exception.name())))));
             methodDeclaration.setBody(blockStmt);
         }
