@@ -175,6 +175,16 @@ public class SmartCallback extends DefaultCallback {
 
     @SuppressWarnings("unused")
     private void delete(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+        // getOperator
+        if (!existMethod(apiClassDeclaration, "getOperator", getRequestType(apiDefinition))) {
+            cu.addImport(com.github.microprograms.micro_api_runtime.model.Operator.class);
+            MethodDeclaration getOperatorMethodDeclaration = apiClassDeclaration.addMethod("getOperator", Modifier.PRIVATE, Modifier.STATIC);
+            getOperatorMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
+            getOperatorMethodDeclaration.setType(String.format("%s<?>", com.github.microprograms.micro_api_runtime.model.Operator.class.getSimpleName()));
+            BlockStmt getOperatorMethodBody = new BlockStmt();
+            getOperatorMethodBody.addStatement(new ReturnStmt(new NullLiteralExpr()));
+            getOperatorMethodDeclaration.setBody(getOperatorMethodBody);
+        }
         // buildFinalCondition
         if (!existMethod(apiClassDeclaration, "buildFinalCondition", getRequestType(apiDefinition))) {
             cu.addImport(Condition.class);
@@ -189,11 +199,16 @@ public class SmartCallback extends DefaultCallback {
         // core
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
         cu.addImport(IgniteUtils.class);
+        cu.addImport(MicroApiExecuteException.class);
+        cu.addImport(MicroApiReserveResponseCodeEnum.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getResponseType(apiDefinition)), "resp");
         coreMethodDeclaration.addThrownException(Exception.class);
         BlockStmt coreMethodBody = new BlockStmt();
+        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("%s<?>", com.github.microprograms.micro_api_runtime.model.Operator.class.getSimpleName())), "operator"), new MethodCallExpr(null, new SimpleName("getOperator"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
+        coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
+        coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Object.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(IgniteUtils.class.getSimpleName()), new SimpleName("deleteObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"))));
         coreMethodDeclaration.setBody(coreMethodBody);
@@ -240,6 +255,16 @@ public class SmartCallback extends DefaultCallback {
 
     @SuppressWarnings("unused")
     private void update(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+        // getOperator
+        if (!existMethod(apiClassDeclaration, "getOperator", getRequestType(apiDefinition))) {
+            cu.addImport(com.github.microprograms.micro_api_runtime.model.Operator.class);
+            MethodDeclaration getOperatorMethodDeclaration = apiClassDeclaration.addMethod("getOperator", Modifier.PRIVATE, Modifier.STATIC);
+            getOperatorMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
+            getOperatorMethodDeclaration.setType(String.format("%s<?>", com.github.microprograms.micro_api_runtime.model.Operator.class.getSimpleName()));
+            BlockStmt getOperatorMethodBody = new BlockStmt();
+            getOperatorMethodBody.addStatement(new ReturnStmt(new NullLiteralExpr()));
+            getOperatorMethodDeclaration.setBody(getOperatorMethodBody);
+        }
         // buildFinalCondition
         if (!existMethod(apiClassDeclaration, "buildFinalCondition", getRequestType(apiDefinition))) {
             cu.addImport(Condition.class);
@@ -265,11 +290,16 @@ public class SmartCallback extends DefaultCallback {
         // core
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
         cu.addImport(IgniteUtils.class);
+        cu.addImport(MicroApiExecuteException.class);
+        cu.addImport(MicroApiReserveResponseCodeEnum.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getResponseType(apiDefinition)), "resp");
         coreMethodDeclaration.addThrownException(Exception.class);
         BlockStmt coreMethodBody = new BlockStmt();
+        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("%s<?>", com.github.microprograms.micro_api_runtime.model.Operator.class.getSimpleName())), "operator"), new MethodCallExpr(null, new SimpleName("getOperator"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
+        coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
+        coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Object.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("List<%s>", FieldToUpdate.class.getSimpleName())), "fields"), new MethodCallExpr(null, new SimpleName("buildFieldsToUpdate"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(IgniteUtils.class.getSimpleName()), new SimpleName("updateFieldsForObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("fields"), new NameExpr("finalCondition"))));
