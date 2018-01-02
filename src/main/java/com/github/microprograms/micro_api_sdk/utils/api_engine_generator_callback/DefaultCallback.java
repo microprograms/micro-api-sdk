@@ -1,5 +1,7 @@
 package com.github.microprograms.micro_api_sdk.utils.api_engine_generator_callback;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -89,6 +91,11 @@ public class DefaultCallback implements Callback {
 
     protected boolean existMethod(ClassOrInterfaceDeclaration apiClassDeclaration, String name, String... paramTypes) {
         return !apiClassDeclaration.getMethodsBySignature(name, paramTypes).isEmpty();
+    }
+
+    protected MethodDeclaration getMethod(ClassOrInterfaceDeclaration apiClassDeclaration, String name, String... paramTypes) {
+        List<MethodDeclaration> list = apiClassDeclaration.getMethodsBySignature(name, paramTypes);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     protected String getRequestType(ApiDefinition apiDefinition) {
