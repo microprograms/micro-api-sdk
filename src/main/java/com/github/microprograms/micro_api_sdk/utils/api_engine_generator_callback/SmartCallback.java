@@ -68,8 +68,16 @@ public class SmartCallback extends DefaultCallback {
         }
     }
 
-    @SuppressWarnings("unused")
-    private void queryList(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+    private static FieldDefinition getIdField(EntityDefinition entityDefinition) {
+        for (FieldDefinition x : entityDefinition.getFieldDefinitions()) {
+            if (x.getName().endsWith("Id")) {
+                return x;
+            }
+        }
+        return null;
+    }
+
+    protected void queryList(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
         // buildFinalCondition
         if (!existMethod(apiClassDeclaration, "buildFinalCondition", getRequestType(apiDefinition))) {
             cu.addImport(Where.class);
@@ -110,8 +118,7 @@ public class SmartCallback extends DefaultCallback {
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 
-    @SuppressWarnings("unused")
-    private void queryAll(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+    protected void queryAll(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
         // buildFinalCondition
         if (!existMethod(apiClassDeclaration, "buildFinalCondition", getRequestType(apiDefinition))) {
             MethodDeclaration buildFinalConditionMethodDeclaration = apiClassDeclaration.addMethod("buildFinalCondition", Modifier.PRIVATE, Modifier.STATIC);
@@ -147,8 +154,7 @@ public class SmartCallback extends DefaultCallback {
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 
-    @SuppressWarnings("unused")
-    private void queryDetail(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+    protected void queryDetail(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
         // buildFinalCondition
         if (!existMethod(apiClassDeclaration, "buildFinalCondition", getRequestType(apiDefinition))) {
             cu.addImport(Condition.class);
@@ -173,8 +179,7 @@ public class SmartCallback extends DefaultCallback {
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 
-    @SuppressWarnings("unused")
-    private void delete(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+    protected void delete(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
         // getOperator
         if (!existMethod(apiClassDeclaration, "getOperator", getRequestType(apiDefinition))) {
             cu.addImport(com.github.microprograms.micro_api_runtime.model.Operator.class);
@@ -214,8 +219,7 @@ public class SmartCallback extends DefaultCallback {
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 
-    @SuppressWarnings("unused")
-    private void add(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+    protected void add(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
         // getOperator
         if (!existMethod(apiClassDeclaration, "getOperator", getRequestType(apiDefinition))) {
             cu.addImport(com.github.microprograms.micro_api_runtime.model.Operator.class);
@@ -253,8 +257,7 @@ public class SmartCallback extends DefaultCallback {
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 
-    @SuppressWarnings("unused")
-    private void update(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+    protected void update(String entityName, ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
         // getOperator
         if (!existMethod(apiClassDeclaration, "getOperator", getRequestType(apiDefinition))) {
             cu.addImport(com.github.microprograms.micro_api_runtime.model.Operator.class);
@@ -304,14 +307,5 @@ public class SmartCallback extends DefaultCallback {
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("List<%s>", FieldToUpdate.class.getSimpleName())), "fields"), new MethodCallExpr(null, new SimpleName("buildFieldsToUpdate"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(IgniteUtils.class.getSimpleName()), new SimpleName("updateFieldsForObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("fields"), new NameExpr("finalCondition"))));
         coreMethodDeclaration.setBody(coreMethodBody);
-    }
-
-    private static FieldDefinition getIdField(EntityDefinition entityDefinition) {
-        for (FieldDefinition x : entityDefinition.getFieldDefinitions()) {
-            if (x.getName().endsWith("Id")) {
-                return x;
-            }
-        }
-        return null;
     }
 }
