@@ -22,7 +22,6 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -190,8 +189,8 @@ public class ApiEngineGeneratorUtils {
             apiClassDeclaration.addAndGetAnnotation(Comment.class).addPair("value", "\"" + apiDefinition.getComment() + "\"");
             _deleteMicroApiAnnotation(apiClassDeclaration);
             _fillMicroApiAnnotation(apiClassDeclaration, apiDefinition, engineDefinition);
-            _deleteExecuteMethodDeclaration(apiClassDeclaration);
-            callback.fillExecuteMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
+            callback.updateCoreMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
+            callback.updateExecuteMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
             _deleteRequestAndResponseClassDeclaration(apiClassDeclaration);
             _fillReqAndRespInnerClassDeclaration(apiClassDeclaration, apiDefinition);
         } else {
@@ -206,8 +205,8 @@ public class ApiEngineGeneratorUtils {
             ClassOrInterfaceDeclaration apiClassDeclaration = cu.addClass(apiDefinition.getJavaClassName(), Modifier.PUBLIC);
             apiClassDeclaration.addAndGetAnnotation(Comment.class).addPair("value", "\"" + apiDefinition.getComment() + "\"");
             _fillMicroApiAnnotation(apiClassDeclaration, apiDefinition, engineDefinition);
-            callback.fillCoreMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
-            callback.fillExecuteMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
+            callback.updateCoreMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
+            callback.updateExecuteMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
             _fillReqAndRespInnerClassDeclaration(apiClassDeclaration, apiDefinition);
         }
         OutputStream output = new FileOutputStream(javaFile);
@@ -255,12 +254,6 @@ public class ApiEngineGeneratorUtils {
             if (x.getExtendedTypes().contains(new ClassOrInterfaceType("Request")) || x.getExtendedTypes().contains(new ClassOrInterfaceType("Response"))) {
                 apiClassDeclaration.remove(x);
             }
-        }
-    }
-
-    private static void _deleteExecuteMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration) {
-        for (MethodDeclaration x : apiClassDeclaration.getMethodsBySignature("execute", "Request")) {
-            x.remove();
         }
     }
 

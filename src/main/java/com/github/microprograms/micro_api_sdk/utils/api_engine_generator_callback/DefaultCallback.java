@@ -33,7 +33,8 @@ import com.github.microprograms.micro_entity_definition_runtime.model.FieldDefin
 public class DefaultCallback implements Callback {
 
     @Override
-    public void fillExecuteMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+    public void updateExecuteMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+        removeMethod(apiClassDeclaration, "execute", "Request");
         MethodDeclaration executeMethodDeclaration = apiClassDeclaration.addMethod("execute", Modifier.PUBLIC, Modifier.STATIC);
         executeMethodDeclaration.setType(Response.class);
         executeMethodDeclaration.addParameter(Request.class, "request");
@@ -64,16 +65,37 @@ public class DefaultCallback implements Callback {
     }
 
     @Override
-    public void fillCoreMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+    public void updateCoreMethodDeclaration(ClassOrInterfaceDeclaration apiClassDeclaration, ApiDefinition apiDefinition, CompilationUnit cu) {
+        if (existMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition))) {
+            return;
+        }
         cu.addImport(MicroApiExecuteException.class.getName());
         cu.addImport(MicroApiReserveResponseCodeEnum.class.getName());
         MethodDeclaration methodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
-        methodDeclaration.addParameter(new ClassOrInterfaceType(apiDefinition.getRequestDefinition() != null ? "Req" : "Request"), "req");
-        methodDeclaration.addParameter(new ClassOrInterfaceType(apiDefinition.getResponseDefinition() != null ? "Resp" : "Response"), "resp");
+        methodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
+        methodDeclaration.addParameter(new ClassOrInterfaceType(getResponseType(apiDefinition)), "resp");
         methodDeclaration.addThrownException(Exception.class);
         BlockStmt blockStmt = new BlockStmt();
         blockStmt.addStatement(new VariableDeclarationExpr(new ClassOrInterfaceType(Object.class.getSimpleName()), "doSomeThingHere"));
         blockStmt.addStatement(new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.api_not_implemented_exception.name())))));
         methodDeclaration.setBody(blockStmt);
+    }
+
+    protected void removeMethod(ClassOrInterfaceDeclaration apiClassDeclaration, String name, String... paramTypes) {
+        for (MethodDeclaration x : apiClassDeclaration.getMethodsBySignature(name, paramTypes)) {
+            x.remove();
+        }
+    }
+
+    protected boolean existMethod(ClassOrInterfaceDeclaration apiClassDeclaration, String name, String... paramTypes) {
+        return !apiClassDeclaration.getMethodsBySignature(name, paramTypes).isEmpty();
+    }
+
+    protected String getRequestType(ApiDefinition apiDefinition) {
+        return apiDefinition.getRequestDefinition() != null ? "Req" : "Request";
+    }
+
+    protected String getResponseType(ApiDefinition apiDefinition) {
+        return apiDefinition.getResponseDefinition() != null ? "Resp" : "Response";
     }
 }
