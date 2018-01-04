@@ -5,7 +5,7 @@
 
     <groupId>com.github.microprograms</groupId>
     <artifactId>micro-api-sdk</artifactId>
-    <version>1.1.1.r3</version>
+    <version>1.1.1.r4</version>
     <packaging>jar</packaging>
 
     <name>micro-api-sdk</name>
@@ -67,8 +67,8 @@
     <dependencies>
         <dependency>
             <groupId>com.github.microprograms</groupId>
-            <artifactId>ignite-utils</artifactId>
-            <version>2.0.1</version>
+            <artifactId>micro-oss-core</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
             <groupId>com.jcabi</groupId>
@@ -79,11 +79,6 @@
             <groupId>com.jcabi</groupId>
             <artifactId>jcabi-http</artifactId>
             <version>1.17.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.xuzw</groupId>
-            <artifactId>html-builder</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>

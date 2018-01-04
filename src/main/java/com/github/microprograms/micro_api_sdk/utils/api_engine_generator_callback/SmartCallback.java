@@ -28,18 +28,18 @@ import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.microprograms.ignite_utils.IgniteUtils;
-import com.github.microprograms.ignite_utils.sql.dml.Condition;
-import com.github.microprograms.ignite_utils.sql.dml.FieldToUpdate;
-import com.github.microprograms.ignite_utils.sql.dml.PagerRequest;
-import com.github.microprograms.ignite_utils.sql.dml.PagerResponse;
-import com.github.microprograms.ignite_utils.sql.dml.Sort;
-import com.github.microprograms.ignite_utils.sql.dml.Where;
 import com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum;
 import com.github.microprograms.micro_api_runtime.exception.MicroApiExecuteException;
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_entity_definition_runtime.model.EntityDefinition;
 import com.github.microprograms.micro_entity_definition_runtime.model.FieldDefinition;
+import com.github.microprograms.micro_oss_core.MicroOss;
+import com.github.microprograms.micro_oss_core.model.Field;
+import com.github.microprograms.micro_oss_core.model.dml.Condition;
+import com.github.microprograms.micro_oss_core.model.dml.PagerRequest;
+import com.github.microprograms.micro_oss_core.model.dml.PagerResponse;
+import com.github.microprograms.micro_oss_core.model.dml.Sort;
+import com.github.microprograms.micro_oss_core.model.dml.Where;
 
 public class SmartCallback extends DefaultCallback {
 
@@ -81,9 +81,10 @@ public class SmartCallback extends DefaultCallback {
         // buildFinalCondition
         if (!existMethod(apiClassDeclaration, "buildFinalCondition", getRequestType(apiDefinition))) {
             cu.addImport(Where.class);
+            cu.addImport(Condition.class);
             MethodDeclaration buildFinalConditionMethodDeclaration = apiClassDeclaration.addMethod("buildFinalCondition", Modifier.PRIVATE, Modifier.STATIC);
             buildFinalConditionMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
-            buildFinalConditionMethodDeclaration.setType(Object.class);
+            buildFinalConditionMethodDeclaration.setType(Condition.class);
             BlockStmt buildFinalConditionMethodBody = new BlockStmt();
             buildFinalConditionMethodBody.addStatement(new ReturnStmt(new MethodCallExpr(new NameExpr(Where.class.getSimpleName()), new SimpleName("and"), NodeList.nodeList(new NullLiteralExpr()))));
             buildFinalConditionMethodDeclaration.setBody(buildFinalConditionMethodBody);
@@ -104,17 +105,17 @@ public class SmartCallback extends DefaultCallback {
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
         cu.addImport(PagerRequest.class);
         cu.addImport(PagerResponse.class);
-        cu.addImport(IgniteUtils.class);
+        cu.addImport(MicroOss.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getResponseType(apiDefinition)), "resp");
         coreMethodDeclaration.addThrownException(Exception.class);
         BlockStmt coreMethodBody = new BlockStmt();
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(PagerRequest.class.getSimpleName()), "pager"), new ObjectCreationExpr(null, new ClassOrInterfaceType(PagerRequest.class.getSimpleName()), NodeList.nodeList(new MethodCallExpr(new NameExpr("req"), "getPageIndex"), new MethodCallExpr(new NameExpr("req"), "getPageSize"))), Operator.ASSIGN));
-        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Object.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
+        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Condition.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("List<%s>", Sort.class.getSimpleName())), "sorts"), new MethodCallExpr(null, new SimpleName("buildSort"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
-        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr("resp"), new SimpleName("setData"), NodeList.nodeList(new MethodCallExpr(new NameExpr(IgniteUtils.class.getSimpleName()), new SimpleName("queryAllObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"), new NameExpr("sorts"), new NameExpr("pager"))))));
-        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr("resp"), new SimpleName("setPager"), NodeList.nodeList(new ObjectCreationExpr(null, new ClassOrInterfaceType(PagerResponse.class.getSimpleName()), NodeList.nodeList(new NameExpr("pager"), new MethodCallExpr(new NameExpr(IgniteUtils.class.getSimpleName()), new SimpleName("queryCount"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"))))))));
+        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr("resp"), new SimpleName("setData"), NodeList.nodeList(new MethodCallExpr(new NameExpr(MicroOss.class.getSimpleName()), new SimpleName("queryAll"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"), new NameExpr("sorts"), new NameExpr("pager"))))));
+        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr("resp"), new SimpleName("setPager"), NodeList.nodeList(new ObjectCreationExpr(null, new ClassOrInterfaceType(PagerResponse.class.getSimpleName()), NodeList.nodeList(new NameExpr("pager"), new MethodCallExpr(new NameExpr(MicroOss.class.getSimpleName()), new SimpleName("queryCount"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"))))))));
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 
@@ -123,7 +124,7 @@ public class SmartCallback extends DefaultCallback {
         if (!existMethod(apiClassDeclaration, "buildFinalCondition", getRequestType(apiDefinition))) {
             MethodDeclaration buildFinalConditionMethodDeclaration = apiClassDeclaration.addMethod("buildFinalCondition", Modifier.PRIVATE, Modifier.STATIC);
             buildFinalConditionMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
-            buildFinalConditionMethodDeclaration.setType(Object.class);
+            buildFinalConditionMethodDeclaration.setType(Condition.class);
             BlockStmt buildFinalConditionMethodBody = new BlockStmt();
             buildFinalConditionMethodBody.addStatement(new ReturnStmt(new NullLiteralExpr()));
             buildFinalConditionMethodDeclaration.setBody(buildFinalConditionMethodBody);
@@ -142,15 +143,15 @@ public class SmartCallback extends DefaultCallback {
         }
         // core
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
-        cu.addImport(IgniteUtils.class);
+        cu.addImport(MicroOss.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getResponseType(apiDefinition)), "resp");
         coreMethodDeclaration.addThrownException(Exception.class);
         BlockStmt coreMethodBody = new BlockStmt();
-        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Object.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
+        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Condition.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("List<%s>", Sort.class.getSimpleName())), "sorts"), new MethodCallExpr(null, new SimpleName("buildSort"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
-        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr("resp"), new SimpleName("setData"), NodeList.nodeList(new MethodCallExpr(new NameExpr(IgniteUtils.class.getSimpleName()), new SimpleName("queryAllObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"), new NameExpr("sorts"))))));
+        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr("resp"), new SimpleName("setData"), NodeList.nodeList(new MethodCallExpr(new NameExpr(MicroOss.class.getSimpleName()), new SimpleName("queryAll"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"), new NameExpr("sorts"))))));
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 
@@ -160,7 +161,7 @@ public class SmartCallback extends DefaultCallback {
             cu.addImport(Condition.class);
             MethodDeclaration buildFinalConditionMethodDeclaration = apiClassDeclaration.addMethod("buildFinalCondition", Modifier.PRIVATE, Modifier.STATIC);
             buildFinalConditionMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
-            buildFinalConditionMethodDeclaration.setType(Object.class);
+            buildFinalConditionMethodDeclaration.setType(Condition.class);
             BlockStmt buildFinalConditionMethodBody = new BlockStmt();
             String idFieldName = getIdField(apiDefinition.getRequestDefinition()).getName();
             buildFinalConditionMethodBody.addStatement(new ReturnStmt(new MethodCallExpr(new NameExpr(Condition.class.getSimpleName()), new SimpleName("build"), NodeList.nodeList(new StringLiteralExpr("id="), new MethodCallExpr(new NameExpr("req"), "get" + StringUtils.capitalize(idFieldName))))));
@@ -168,14 +169,14 @@ public class SmartCallback extends DefaultCallback {
         }
         // core
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
-        cu.addImport(IgniteUtils.class);
+        cu.addImport(MicroOss.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getResponseType(apiDefinition)), "resp");
         coreMethodDeclaration.addThrownException(Exception.class);
         BlockStmt coreMethodBody = new BlockStmt();
-        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Object.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
-        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr("resp"), new SimpleName("setData"), NodeList.nodeList(new MethodCallExpr(new NameExpr(IgniteUtils.class.getSimpleName()), new SimpleName("queryObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"))))));
+        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Condition.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
+        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr("resp"), new SimpleName("setData"), NodeList.nodeList(new MethodCallExpr(new NameExpr(MicroOss.class.getSimpleName()), new SimpleName("queryObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"))))));
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 
@@ -195,7 +196,7 @@ public class SmartCallback extends DefaultCallback {
             cu.addImport(Condition.class);
             MethodDeclaration buildFinalConditionMethodDeclaration = apiClassDeclaration.addMethod("buildFinalCondition", Modifier.PRIVATE, Modifier.STATIC);
             buildFinalConditionMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
-            buildFinalConditionMethodDeclaration.setType(Object.class);
+            buildFinalConditionMethodDeclaration.setType(Condition.class);
             BlockStmt buildFinalConditionMethodBody = new BlockStmt();
             String idFieldName = getIdField(apiDefinition.getRequestDefinition()).getName();
             buildFinalConditionMethodBody.addStatement(new ReturnStmt(new MethodCallExpr(new NameExpr(Condition.class.getSimpleName()), new SimpleName("build"), NodeList.nodeList(new StringLiteralExpr("id="), new MethodCallExpr(new NameExpr("req"), "get" + StringUtils.capitalize(idFieldName))))));
@@ -203,7 +204,7 @@ public class SmartCallback extends DefaultCallback {
         }
         // core
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
-        cu.addImport(IgniteUtils.class);
+        cu.addImport(MicroOss.class);
         cu.addImport(MicroApiExecuteException.class);
         cu.addImport(MicroApiReserveResponseCodeEnum.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
@@ -214,8 +215,8 @@ public class SmartCallback extends DefaultCallback {
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("%s<?>", com.github.microprograms.micro_api_runtime.model.Operator.class.getSimpleName())), "operator"), new MethodCallExpr(null, new SimpleName("getOperator"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
         coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
-        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Object.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
-        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(IgniteUtils.class.getSimpleName()), new SimpleName("deleteObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"))));
+        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Condition.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
+        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(MicroOss.class.getSimpleName()), new SimpleName("deleteObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"))));
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 
@@ -242,7 +243,7 @@ public class SmartCallback extends DefaultCallback {
         }
         // core
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
-        cu.addImport(IgniteUtils.class);
+        cu.addImport(MicroOss.class);
         cu.addImport(MicroApiExecuteException.class);
         cu.addImport(MicroApiReserveResponseCodeEnum.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
@@ -253,7 +254,7 @@ public class SmartCallback extends DefaultCallback {
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("%s<?>", com.github.microprograms.micro_api_runtime.model.Operator.class.getSimpleName())), "operator"), new MethodCallExpr(null, new SimpleName("getOperator"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
         coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
-        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(IgniteUtils.class.getSimpleName()), new SimpleName("insertObject"), NodeList.nodeList(new MethodCallExpr(null, new SimpleName(buildEntityMethodName), NodeList.nodeList(new NameExpr("req"))))));
+        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(MicroOss.class.getSimpleName()), new SimpleName("insertObject"), NodeList.nodeList(new MethodCallExpr(null, new SimpleName(buildEntityMethodName), NodeList.nodeList(new NameExpr("req"))))));
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 
@@ -273,7 +274,7 @@ public class SmartCallback extends DefaultCallback {
             cu.addImport(Condition.class);
             MethodDeclaration buildFinalConditionMethodDeclaration = apiClassDeclaration.addMethod("buildFinalCondition", Modifier.PRIVATE, Modifier.STATIC);
             buildFinalConditionMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
-            buildFinalConditionMethodDeclaration.setType(Object.class);
+            buildFinalConditionMethodDeclaration.setType(Condition.class);
             BlockStmt buildFinalConditionMethodBody = new BlockStmt();
             String idFieldName = getIdField(apiDefinition.getRequestDefinition()).getName();
             buildFinalConditionMethodBody.addStatement(new ReturnStmt(new MethodCallExpr(new NameExpr(Condition.class.getSimpleName()), new SimpleName("build"), NodeList.nodeList(new StringLiteralExpr("id="), new MethodCallExpr(new NameExpr("req"), "get" + StringUtils.capitalize(idFieldName))))));
@@ -281,18 +282,18 @@ public class SmartCallback extends DefaultCallback {
         }
         // buildFieldsToUpdate
         if (!existMethod(apiClassDeclaration, "buildFieldsToUpdate", getRequestType(apiDefinition))) {
-            cu.addImport(FieldToUpdate.class);
+            cu.addImport(Field.class);
             cu.addImport(List.class);
             MethodDeclaration buildFieldsToUpdateMethodDeclaration = apiClassDeclaration.addMethod("buildFieldsToUpdate", Modifier.PRIVATE, Modifier.STATIC);
             buildFieldsToUpdateMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
-            buildFieldsToUpdateMethodDeclaration.setType(String.format("List<%s>", FieldToUpdate.class.getSimpleName()));
+            buildFieldsToUpdateMethodDeclaration.setType(String.format("List<%s>", Field.class.getSimpleName()));
             BlockStmt buildFieldsToUpdateMethodBody = new BlockStmt();
             buildFieldsToUpdateMethodBody.addStatement(new ReturnStmt(new NullLiteralExpr()));
             buildFieldsToUpdateMethodDeclaration.setBody(buildFieldsToUpdateMethodBody);
         }
         // core
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
-        cu.addImport(IgniteUtils.class);
+        cu.addImport(MicroOss.class);
         cu.addImport(MicroApiExecuteException.class);
         cu.addImport(MicroApiReserveResponseCodeEnum.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
@@ -303,9 +304,9 @@ public class SmartCallback extends DefaultCallback {
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("%s<?>", com.github.microprograms.micro_api_runtime.model.Operator.class.getSimpleName())), "operator"), new MethodCallExpr(null, new SimpleName("getOperator"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
         coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
-        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Object.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
-        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("List<%s>", FieldToUpdate.class.getSimpleName())), "fields"), new MethodCallExpr(null, new SimpleName("buildFieldsToUpdate"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
-        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(IgniteUtils.class.getSimpleName()), new SimpleName("updateFieldsForObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("fields"), new NameExpr("finalCondition"))));
+        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Condition.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
+        coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("List<%s>", Field.class.getSimpleName())), "fields"), new MethodCallExpr(null, new SimpleName("buildFieldsToUpdate"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
+        coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(MicroOss.class.getSimpleName()), new SimpleName("updateObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("fields"), new NameExpr("finalCondition"))));
         coreMethodDeclaration.setBody(coreMethodBody);
     }
 }
