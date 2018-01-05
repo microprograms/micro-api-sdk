@@ -2,7 +2,7 @@ package com.github.microprograms.micro_api_sdk.model;
 
 import java.util.List;
 
-import com.github.microprograms.micro_entity_definition_runtime.model.EntityDefinition;
+import com.github.microprograms.micro_nested_data_model_sdk.model.NestedEntityDefinition;
 
 public class ApiDefinition {
     private String type;
@@ -10,8 +10,8 @@ public class ApiDefinition {
     private String description;
     private List<String> imports;
     private String javaClassName;
-    private EntityDefinition requestDefinition;
-    private EntityDefinition responseDefinition;
+    private NestedEntityDefinition requestDefinition;
+    private NestedEntityDefinition responseDefinition;
 
     public String getType() {
         return type;
@@ -53,19 +53,19 @@ public class ApiDefinition {
         this.javaClassName = javaClassName;
     }
 
-    public EntityDefinition getRequestDefinition() {
+    public NestedEntityDefinition getRequestDefinition() {
         return requestDefinition;
     }
 
-    public void setRequestDefinition(EntityDefinition requestDefinition) {
+    public void setRequestDefinition(NestedEntityDefinition requestDefinition) {
         this.requestDefinition = requestDefinition;
     }
 
-    public EntityDefinition getResponseDefinition() {
+    public NestedEntityDefinition getResponseDefinition() {
         return responseDefinition;
     }
 
-    public void setResponseDefinition(EntityDefinition responseDefinition) {
+    public void setResponseDefinition(NestedEntityDefinition responseDefinition) {
         this.responseDefinition = responseDefinition;
     }
 }

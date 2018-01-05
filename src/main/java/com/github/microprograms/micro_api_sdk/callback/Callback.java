@@ -1,4 +1,4 @@
-package com.github.microprograms.micro_api_sdk.utils.api_engine_generator_callback;
+package com.github.microprograms.micro_api_sdk.callback;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;

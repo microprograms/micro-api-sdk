@@ -2,7 +2,7 @@ package com.github.microprograms.micro_api_sdk.model;
 
 import java.util.List;
 
-import com.github.microprograms.micro_entity_definition_runtime.model.EntityDefinition;
+import com.github.microprograms.micro_relational_data_model_sdk.model.PlainEntityDefinition;
 
 public class EngineDefinition {
     private String comment;
@@ -11,7 +11,7 @@ public class EngineDefinition {
     private String javaPackageName;
     private List<ApiDefinition> apiDefinitions;
     private List<ErrorCodeDefinition> errorCodeDefinitions;
-    private List<EntityDefinition> modelDefinitions;
+    private List<PlainEntityDefinition> modelDefinitions;
     private ServerAddressDefinition serverAddressDefinition;
     private ShowdocDefinition showdocDefinition;
     private DeployDefinition deployDefinition;
@@ -65,11 +65,11 @@ public class EngineDefinition {
         this.errorCodeDefinitions = errorCodeDefinitions;
     }
 
-    public List<EntityDefinition> getModelDefinitions() {
+    public List<PlainEntityDefinition> getModelDefinitions() {
         return modelDefinitions;
     }
 
-    public void setModelDefinitions(List<EntityDefinition> modelDefinitions) {
+    public void setModelDefinitions(List<PlainEntityDefinition> modelDefinitions) {
         this.modelDefinitions = modelDefinitions;
     }
 

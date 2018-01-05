@@ -1,4 +1,4 @@
-package com.github.microprograms.micro_api_sdk.utils.api_engine_generator_callback;
+package com.github.microprograms.micro_api_sdk.callback;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -29,10 +29,10 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum;
-import com.github.microprograms.micro_api_runtime.exception.MicroApiExecuteException;
+import com.github.microprograms.micro_api_runtime.exception.MicroApiPassthroughException;
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
-import com.github.microprograms.micro_entity_definition_runtime.model.EntityDefinition;
-import com.github.microprograms.micro_entity_definition_runtime.model.FieldDefinition;
+import com.github.microprograms.micro_nested_data_model_sdk.model.NestedEntityDefinition;
+import com.github.microprograms.micro_nested_data_model_sdk.model.NestedFieldDefinition;
 import com.github.microprograms.micro_oss_core.MicroOss;
 import com.github.microprograms.micro_oss_core.model.Field;
 import com.github.microprograms.micro_oss_core.model.dml.Condition;
@@ -68,8 +68,8 @@ public class SmartCallback extends DefaultCallback {
         }
     }
 
-    private static FieldDefinition getIdField(EntityDefinition entityDefinition) {
-        for (FieldDefinition x : entityDefinition.getFieldDefinitions()) {
+    private static NestedFieldDefinition getIdField(NestedEntityDefinition entityDefinition) {
+        for (NestedFieldDefinition x : entityDefinition.getFieldDefinitions()) {
             if (x.getName().endsWith("Id")) {
                 return x;
             }
@@ -205,7 +205,7 @@ public class SmartCallback extends DefaultCallback {
         // core
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
         cu.addImport(MicroOss.class);
-        cu.addImport(MicroApiExecuteException.class);
+        cu.addImport(MicroApiPassthroughException.class);
         cu.addImport(MicroApiReserveResponseCodeEnum.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
@@ -213,8 +213,8 @@ public class SmartCallback extends DefaultCallback {
         coreMethodDeclaration.addThrownException(Exception.class);
         BlockStmt coreMethodBody = new BlockStmt();
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("%s<?>", com.github.microprograms.micro_api_runtime.model.Operator.class.getSimpleName())), "operator"), new MethodCallExpr(null, new SimpleName("getOperator"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
-        coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
-        coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
+        coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiPassthroughException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
+        coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiPassthroughException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Condition.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(MicroOss.class.getSimpleName()), new SimpleName("deleteObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("finalCondition"))));
         coreMethodDeclaration.setBody(coreMethodBody);
@@ -244,7 +244,7 @@ public class SmartCallback extends DefaultCallback {
         // core
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
         cu.addImport(MicroOss.class);
-        cu.addImport(MicroApiExecuteException.class);
+        cu.addImport(MicroApiPassthroughException.class);
         cu.addImport(MicroApiReserveResponseCodeEnum.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
@@ -252,8 +252,8 @@ public class SmartCallback extends DefaultCallback {
         coreMethodDeclaration.addThrownException(Exception.class);
         BlockStmt coreMethodBody = new BlockStmt();
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("%s<?>", com.github.microprograms.micro_api_runtime.model.Operator.class.getSimpleName())), "operator"), new MethodCallExpr(null, new SimpleName("getOperator"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
-        coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
-        coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
+        coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiPassthroughException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
+        coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiPassthroughException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
         coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(MicroOss.class.getSimpleName()), new SimpleName("insertObject"), NodeList.nodeList(new MethodCallExpr(null, new SimpleName(buildEntityMethodName), NodeList.nodeList(new NameExpr("req"))))));
         coreMethodDeclaration.setBody(coreMethodBody);
     }
@@ -294,7 +294,7 @@ public class SmartCallback extends DefaultCallback {
         // core
         removeMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition));
         cu.addImport(MicroOss.class);
-        cu.addImport(MicroApiExecuteException.class);
+        cu.addImport(MicroApiPassthroughException.class);
         cu.addImport(MicroApiReserveResponseCodeEnum.class);
         MethodDeclaration coreMethodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
         coreMethodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
@@ -302,8 +302,8 @@ public class SmartCallback extends DefaultCallback {
         coreMethodDeclaration.addThrownException(Exception.class);
         BlockStmt coreMethodBody = new BlockStmt();
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("%s<?>", com.github.microprograms.micro_api_runtime.model.Operator.class.getSimpleName())), "operator"), new MethodCallExpr(null, new SimpleName("getOperator"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
-        coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
-        coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
+        coreMethodBody.addStatement(new IfStmt(new BinaryExpr(new NameExpr("operator"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiPassthroughException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.unknown_operator_exception.name())))), null));
+        coreMethodBody.addStatement(new IfStmt(new MethodCallExpr(new NameExpr("operator"), "isPermissionDenied"), new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiPassthroughException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.permission_denied_exception.name())))), null));
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(Condition.class.getSimpleName()), "finalCondition"), new MethodCallExpr(null, new SimpleName("buildFinalCondition"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType(String.format("List<%s>", Field.class.getSimpleName())), "fields"), new MethodCallExpr(null, new SimpleName("buildFieldsToUpdate"), NodeList.nodeList(new NameExpr("req"))), Operator.ASSIGN));
         coreMethodBody.addStatement(new MethodCallExpr(new NameExpr(MicroOss.class.getSimpleName()), new SimpleName("updateObject"), NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(entityName)), new NameExpr("fields"), new NameExpr("finalCondition"))));

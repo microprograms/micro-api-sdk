@@ -1,4 +1,4 @@
-package com.github.microprograms.micro_api_sdk.utils.api_engine_generator_callback;
+package com.github.microprograms.micro_api_sdk.callback;
 
 import java.util.List;
 
@@ -25,12 +25,12 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum;
-import com.github.microprograms.micro_api_runtime.exception.MicroApiExecuteException;
+import com.github.microprograms.micro_api_runtime.exception.MicroApiPassthroughException;
 import com.github.microprograms.micro_api_runtime.model.Request;
 import com.github.microprograms.micro_api_runtime.model.Response;
 import com.github.microprograms.micro_api_runtime.utils.MicroApiUtils;
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
-import com.github.microprograms.micro_entity_definition_runtime.model.FieldDefinition;
+import com.github.microprograms.micro_nested_data_model_sdk.model.NestedFieldDefinition;
 
 public class DefaultCallback implements Callback {
 
@@ -44,7 +44,7 @@ public class DefaultCallback implements Callback {
         BlockStmt blockStmt = new BlockStmt();
         if (apiDefinition.getRequestDefinition() != null) {
             blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Req"), "req"), new CastExpr(new ClassOrInterfaceType("Req"), new NameExpr("request")), Operator.ASSIGN));
-            for (FieldDefinition x : apiDefinition.getRequestDefinition().getFieldDefinitions()) {
+            for (NestedFieldDefinition x : apiDefinition.getRequestDefinition().getFieldDefinitions()) {
                 if (x.getRequired()) {
                     cu.addImport(MicroApiUtils.class.getName());
                     NodeList<Expression> arguments = new NodeList<>();
@@ -71,7 +71,7 @@ public class DefaultCallback implements Callback {
         if (existMethod(apiClassDeclaration, "core", getRequestType(apiDefinition), getResponseType(apiDefinition))) {
             return;
         }
-        cu.addImport(MicroApiExecuteException.class.getName());
+        cu.addImport(MicroApiPassthroughException.class.getName());
         cu.addImport(MicroApiReserveResponseCodeEnum.class.getName());
         MethodDeclaration methodDeclaration = apiClassDeclaration.addMethod("core", Modifier.PRIVATE, Modifier.STATIC);
         methodDeclaration.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
@@ -79,7 +79,7 @@ public class DefaultCallback implements Callback {
         methodDeclaration.addThrownException(Exception.class);
         BlockStmt blockStmt = new BlockStmt();
         blockStmt.addStatement(new VariableDeclarationExpr(new ClassOrInterfaceType(Object.class.getSimpleName()), "doSomeThingHere"));
-        blockStmt.addStatement(new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiExecuteException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.api_not_implemented_exception.name())))));
+        blockStmt.addStatement(new ThrowStmt(new ObjectCreationExpr(null, new ClassOrInterfaceType(MicroApiPassthroughException.class.getSimpleName()), NodeList.nodeList(new FieldAccessExpr(new NameExpr(MicroApiReserveResponseCodeEnum.class.getSimpleName()), MicroApiReserveResponseCodeEnum.api_not_implemented_exception.name())))));
         methodDeclaration.setBody(blockStmt);
     }
 
