@@ -62,12 +62,14 @@ public class ApiDocumentForShowdocUtils {
     }
 
     private static void _updateApiPages(EngineDefinition engineDefinition) throws IOException {
-        for (ApiDefinition apiDefinition : engineDefinition.getApiDefinitions()) {
+        List<ApiDefinition> apiDefinitions = engineDefinition.getApiDefinitions();
+        for (int i = 0; i < apiDefinitions.size(); i++) {
+            ApiDefinition apiDefinition = apiDefinitions.get(i);
             String comment = apiDefinition.getComment();
             String catName = comment.indexOf('-') == -1 ? "" : comment.replaceFirst("\\s*-.*$", "");
             String pageTitle = comment.replaceFirst("^.*-\\s*", "");
             String pageContent = _buildMarkdownForApi(apiDefinition, engineDefinition);
-            _updatePage(catName, pageTitle, pageContent, 99, engineDefinition.getShowdocDefinition());
+            _updatePage(catName, pageTitle, pageContent, 100 + i, engineDefinition.getShowdocDefinition());
         }
     }
 
