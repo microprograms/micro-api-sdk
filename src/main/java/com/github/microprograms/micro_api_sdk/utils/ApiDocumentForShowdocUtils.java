@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum;
@@ -113,7 +115,8 @@ public class ApiDocumentForShowdocUtils {
 						.append(x.getComment()).append("\n");
 			}
 		}
-		return sb.toString();
+		String markdown = sb.toString();
+		return StringUtils.isBlank(markdown) ? "无" : markdown;
 	}
 
 	private static String _buildMarkdownForApi(ApiDefinition apiDefinition, ApiServerDefinition apiServerDefinition) {
