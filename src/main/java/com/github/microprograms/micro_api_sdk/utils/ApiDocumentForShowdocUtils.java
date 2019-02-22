@@ -12,7 +12,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.microprograms.micro_api_runtime.enums.MicroApiReserveResponseCodeEnum;
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
-import com.github.microprograms.micro_api_sdk.model.EngineDefinition;
+import com.github.microprograms.micro_api_sdk.model.ApiServerDefinition;
 import com.github.microprograms.micro_api_sdk.model.ErrorCodeDefinition;
 import com.github.microprograms.micro_api_sdk.model.ServerAddressDefinition;
 import com.github.microprograms.micro_api_sdk.model.ShowdocDefinition;
@@ -25,7 +25,7 @@ import com.jcabi.http.request.JdkRequest;
 
 public class ApiDocumentForShowdocUtils {
 
-    public static void update(EngineDefinition engineDefinition) throws IOException {
+    public static void update(ApiServerDefinition engineDefinition) throws IOException {
         _updateHomePage(engineDefinition);
         _updateErrorCodePage(engineDefinition);
         _updateEntityDefinitionPage(engineDefinition);
@@ -48,20 +48,20 @@ public class ApiDocumentForShowdocUtils {
         }
     }
 
-    private static void _updateHomePage(EngineDefinition engineDefinition) throws IOException {
+    private static void _updateHomePage(ApiServerDefinition engineDefinition) throws IOException {
         _updatePage("", "说明", _buildMarkdownForHomePage(engineDefinition), 1, engineDefinition.getShowdocDefinition());
     }
 
-    private static void _updateErrorCodePage(EngineDefinition engineDefinition) throws IOException {
+    private static void _updateErrorCodePage(ApiServerDefinition engineDefinition) throws IOException {
         _appendCommonErrorCodeDefinitions(engineDefinition);
         _updatePage("", "全局错误码", _buildMarkdownForErrorCode(engineDefinition), 2, engineDefinition.getShowdocDefinition());
     }
 
-    private static void _updateEntityDefinitionPage(EngineDefinition engineDefinition) throws IOException {
+    private static void _updateEntityDefinitionPage(ApiServerDefinition engineDefinition) throws IOException {
         _updatePage("", "实体定义", _buildMarkdownForEntityDefinition(engineDefinition), 3, engineDefinition.getShowdocDefinition());
     }
 
-    private static void _updateApiPages(EngineDefinition engineDefinition) throws IOException {
+    private static void _updateApiPages(ApiServerDefinition engineDefinition) throws IOException {
         List<ApiDefinition> apiDefinitions = engineDefinition.getApiDefinitions();
         for (int i = 0; i < apiDefinitions.size(); i++) {
             ApiDefinition apiDefinition = apiDefinitions.get(i);
@@ -73,7 +73,7 @@ public class ApiDocumentForShowdocUtils {
         }
     }
 
-    private static String _buildMarkdownForHomePage(EngineDefinition engineDefinition) {
+    private static String _buildMarkdownForHomePage(ApiServerDefinition engineDefinition) {
         StringBuffer sb = new StringBuffer();
         sb.append("#### ").append(engineDefinition.getComment()).append("\n");
         sb.append("# ").append(engineDefinition.getVersion()).append("\n");
@@ -85,7 +85,7 @@ public class ApiDocumentForShowdocUtils {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
     }
 
-    private static String _buildMarkdownForErrorCode(EngineDefinition engineDefinition) {
+    private static String _buildMarkdownForErrorCode(ApiServerDefinition engineDefinition) {
         StringBuffer sb = new StringBuffer();
         sb.append("|错误码|错误解释|").append("\n");
         sb.append("|-----|-----|").append("\n");
@@ -95,7 +95,7 @@ public class ApiDocumentForShowdocUtils {
         return sb.toString();
     }
 
-    private static String _buildMarkdownForEntityDefinition(EngineDefinition engineDefinition) {
+    private static String _buildMarkdownForEntityDefinition(ApiServerDefinition engineDefinition) {
         StringBuffer sb = new StringBuffer();
         for (PlainEntityDefinition entityDefinition : engineDefinition.getModelDefinitions()) {
             sb.append(String.format("**%s（%s）**", entityDefinition.getComment(), entityDefinition.getJavaClassName())).append("\n\n");
@@ -108,7 +108,7 @@ public class ApiDocumentForShowdocUtils {
         return sb.toString();
     }
 
-    private static String _buildMarkdownForApi(ApiDefinition apiDefinition, EngineDefinition engineDefinition) {
+    private static String _buildMarkdownForApi(ApiDefinition apiDefinition, ApiServerDefinition engineDefinition) {
         StringBuffer sb = new StringBuffer();
         sb.append("**简要描述：**").append("\n\n");
         sb.append("- ").append(apiDefinition.getComment()).append("\n\n");
@@ -143,7 +143,7 @@ public class ApiDocumentForShowdocUtils {
         return sb.toString();
     }
 
-    private static String _buildApiUrl(EngineDefinition engineDefinition) {
+    private static String _buildApiUrl(ApiServerDefinition engineDefinition) {
         ServerAddressDefinition x = engineDefinition.getServerAddressDefinition();
         return String.format("http://%s:%s%s", x.getHost(), x.getPort(), x.getUrl());
     }
@@ -160,7 +160,7 @@ public class ApiDocumentForShowdocUtils {
         }
     }
 
-    private static void _appendCommonErrorCodeDefinitions(EngineDefinition engineDefinition) {
+    private static void _appendCommonErrorCodeDefinitions(ApiServerDefinition engineDefinition) {
         if (engineDefinition.getErrorCodeDefinitions() == null) {
             engineDefinition.setErrorCodeDefinitions(new ArrayList<>());
         }
