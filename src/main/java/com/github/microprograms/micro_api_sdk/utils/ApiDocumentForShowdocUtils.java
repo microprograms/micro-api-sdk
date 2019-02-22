@@ -162,8 +162,8 @@ public class ApiDocumentForShowdocUtils {
 
 	private static void _appendCommonRequestFieldDefinitions(ApiDefinition apiDefinition) {
 		List<NestedFieldDefinition> commonFieldDefinitions = new ArrayList<>();
-		commonFieldDefinitions.add(_buildFieldDefinition("接口名 - 固定为" + apiDefinition.getJavaClassName(), "apiName",
-				"String", true, apiDefinition.getJavaClassName()));
+		commonFieldDefinitions.add(_buildFieldDefinition("接口名 - 固定为" + apiDefinition.getName(), "apiName", "String",
+				true, apiDefinition.getName()));
 		if (apiDefinition.getRequestDefinition() == null) {
 			NestedEntityDefinition requestDefinition = new NestedEntityDefinition();
 			requestDefinition.setFieldDefinitions(commonFieldDefinitions);

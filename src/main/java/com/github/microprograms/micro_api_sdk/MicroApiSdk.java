@@ -161,7 +161,7 @@ public class MicroApiSdk {
 	private static ApiDefinition getApiDefinitionByJavaClassName(String javaClassName,
 			ApiServerDefinition apiServerDefinition) {
 		for (ApiDefinition apiDefinition : apiServerDefinition.getApiDefinitions()) {
-			if (javaClassName.equals(apiDefinition.getJavaClassName())) {
+			if (javaClassName.equals(apiDefinition.getName())) {
 				return apiDefinition;
 			}
 		}
@@ -178,8 +178,7 @@ public class MicroApiSdk {
 	private static void updateApiJavaSourceFile(String srcFolder, ApiDefinition apiDefinition,
 			ApiServerDefinition apiServerDefinition) throws IOException {
 		String javaPackageName = apiServerDefinition.getJavaPackageName();
-		File javaFile = JavaParserUtils.buildJavaSourceFile(srcFolder, javaPackageName,
-				apiDefinition.getJavaClassName());
+		File javaFile = JavaParserUtils.buildJavaSourceFile(srcFolder, javaPackageName, apiDefinition.getName());
 		CompilationUnit cu = null;
 		if (javaFile.exists()) {
 			cu = JavaParser.parse(javaFile, encoding);
@@ -194,13 +193,7 @@ public class MicroApiSdk {
 			javaFile.getParentFile().mkdirs();
 			javaFile.createNewFile();
 			cu = new CompilationUnit(javaPackageName);
-			if (apiDefinition.getImports() != null) {
-				for (String importJavaClass : apiDefinition.getImports()) {
-					cu.addImport(importJavaClass);
-				}
-			}
-			ClassOrInterfaceDeclaration apiClassDeclaration = cu.addClass(apiDefinition.getJavaClassName(),
-					Modifier.PUBLIC);
+			ClassOrInterfaceDeclaration apiClassDeclaration = cu.addClass(apiDefinition.getName(), Modifier.PUBLIC);
 			_fillMicroApiAnnotation(apiClassDeclaration, apiDefinition, apiServerDefinition);
 			callback.updateCoreMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
 			callback.updateExecuteMethodDeclaration(apiClassDeclaration, apiDefinition, cu);
@@ -235,9 +228,6 @@ public class MicroApiSdk {
 		}
 		if (StringUtils.isNotBlank(apiDefinition.getDescription())) {
 			x.addPair("description", "\"" + apiDefinition.getDescription() + "\"");
-		}
-		if (StringUtils.isNotBlank(apiDefinition.getType())) {
-			x.addPair("type", "\"" + apiDefinition.getType() + "\"");
 		}
 		if (StringUtils.isNotBlank(apiServerDefinition.getVersion())) {
 			x.addPair("version", "\"" + apiServerDefinition.getVersion() + "\"");
