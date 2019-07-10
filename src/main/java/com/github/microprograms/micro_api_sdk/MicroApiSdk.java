@@ -44,10 +44,9 @@ import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_api_sdk.model.ApiServerDefinition;
 import com.github.microprograms.micro_api_sdk.model.ErrorCodeDefinition;
 import com.github.microprograms.micro_api_sdk.model.MixinDefinition;
-import com.github.microprograms.micro_nested_data_model_sdk.MicroNestedDataModelSdk;
-import com.github.microprograms.micro_relational_data_model_sdk.MicroRelationalDataModelSdk;
-import com.github.microprograms.micro_relational_data_model_sdk.model.PlainModelerDefinition;
-import com.github.microprograms.micro_relational_data_model_sdk.utils.JavaParserUtils;
+import com.github.microprograms.micro_api_sdk.utils.JavaParserUtils;
+import com.github.microprograms.micro_model_sdk.MicroModelSdk;
+import com.github.microprograms.micro_model_sdk.model.PlainModelerDefinition;
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.matchprocessor.ClassAnnotationMatchProcessor;
@@ -127,12 +126,12 @@ public class MicroApiSdk {
 
 	public static void deletePlainEntityJavaSourceFiles(String srcFolder, ApiServerDefinition apiServerDefinition)
 			throws IOException {
-		MicroRelationalDataModelSdk.deleteJavaSourceFiles(srcFolder, apiServerDefinition.getJavaPackageName());
+		MicroModelSdk.deleteJavaSourceFiles(srcFolder, apiServerDefinition.getJavaPackageName());
 	}
 
 	public static void updatePlainEntityJavaSourceFiles(String srcFolder, ApiServerDefinition apiServerDefinition)
 			throws IOException {
-		MicroRelationalDataModelSdk.updateJavaSourceFiles(srcFolder, buildPlainModelerDefinition(apiServerDefinition));
+		MicroModelSdk.updateJavaSourceFiles(srcFolder, buildPlainModelerDefinition(apiServerDefinition));
 	}
 
 	private static PlainModelerDefinition buildPlainModelerDefinition(ApiServerDefinition apiServerDefinition) {
@@ -251,14 +250,14 @@ public class MicroApiSdk {
 			reqInnerClassDeclaration.addModifier(Modifier.PUBLIC, Modifier.STATIC).setName("Req")
 					.addExtendedType(Request.class);
 			apiClassDeclaration.addMember(reqInnerClassDeclaration);
-			MicroNestedDataModelSdk.fillFields(reqInnerClassDeclaration, apiDefinition.getRequestDefinition());
+			MicroModelSdk.fillFields(reqInnerClassDeclaration, apiDefinition.getRequestDefinition());
 		}
 		if (apiDefinition.getResponseDefinition() != null) {
 			ClassOrInterfaceDeclaration respInnerClassDeclaration = new ClassOrInterfaceDeclaration();
 			respInnerClassDeclaration.addModifier(Modifier.PUBLIC, Modifier.STATIC).setName("Resp")
 					.addExtendedType(Response.class);
 			apiClassDeclaration.addMember(respInnerClassDeclaration);
-			MicroNestedDataModelSdk.fillFields(respInnerClassDeclaration, apiDefinition.getResponseDefinition());
+			MicroModelSdk.fillFields(respInnerClassDeclaration, apiDefinition.getResponseDefinition());
 		}
 	}
 

@@ -18,10 +18,8 @@ import com.github.microprograms.micro_api_sdk.model.ApiServerDefinition;
 import com.github.microprograms.micro_api_sdk.model.ErrorCodeDefinition;
 import com.github.microprograms.micro_api_sdk.model.ServerAddressDefinition;
 import com.github.microprograms.micro_api_sdk.model.ShowdocDefinition;
-import com.github.microprograms.micro_nested_data_model_sdk.model.NestedEntityDefinition;
-import com.github.microprograms.micro_nested_data_model_sdk.model.NestedFieldDefinition;
-import com.github.microprograms.micro_relational_data_model_sdk.model.PlainEntityDefinition;
-import com.github.microprograms.micro_relational_data_model_sdk.model.PlainFieldDefinition;
+import com.github.microprograms.micro_model_sdk.model.PlainEntityDefinition;
+import com.github.microprograms.micro_model_sdk.model.PlainFieldDefinition;
 import com.jcabi.http.Request;
 import com.jcabi.http.request.JdkRequest;
 
@@ -131,7 +129,7 @@ public class ApiDocumentForShowdocUtils {
 		sb.append("|参数名|必选|类型|说明|").append("\n");
 		sb.append("|-----|-----|-----|-----|").append("\n");
 		_appendCommonRequestFieldDefinitions(apiDefinition);
-		for (NestedFieldDefinition x : apiDefinition.getRequestDefinition().getFieldDefinitions()) {
+		for (PlainFieldDefinition x : apiDefinition.getRequestDefinition().getFieldDefinitions()) {
 			sb.append("|").append(x.getName()).append("|").append(x.getRequired() ? "是" : "否").append("|")
 					.append(_getType(x.getJavaType())).append("|").append(x.getComment()).append("\n");
 		}
@@ -144,7 +142,7 @@ public class ApiDocumentForShowdocUtils {
 		sb.append("|参数名|类型|说明|").append("\n");
 		sb.append("|-----|-----|-----|").append("\n");
 		_appendCommonResponseFieldDefinitions(apiDefinition);
-		for (NestedFieldDefinition x : apiDefinition.getResponseDefinition().getFieldDefinitions()) {
+		for (PlainFieldDefinition x : apiDefinition.getResponseDefinition().getFieldDefinitions()) {
 			sb.append("|").append(x.getName()).append("|").append(_getType(x.getJavaType())).append("|")
 					.append(x.getComment()).append("\n");
 		}
@@ -164,11 +162,11 @@ public class ApiDocumentForShowdocUtils {
 	}
 
 	private static void _appendCommonRequestFieldDefinitions(ApiDefinition apiDefinition) {
-		List<NestedFieldDefinition> commonFieldDefinitions = new ArrayList<>();
+		List<PlainFieldDefinition> commonFieldDefinitions = new ArrayList<>();
 		commonFieldDefinitions.add(_buildFieldDefinition("接口名 - 固定为" + apiDefinition.getName(), "apiName", "String",
 				true, apiDefinition.getName()));
 		if (apiDefinition.getRequestDefinition() == null) {
-			NestedEntityDefinition requestDefinition = new NestedEntityDefinition();
+			PlainEntityDefinition requestDefinition = new PlainEntityDefinition();
 			requestDefinition.setFieldDefinitions(commonFieldDefinitions);
 			apiDefinition.setRequestDefinition(requestDefinition);
 		} else {
@@ -191,13 +189,13 @@ public class ApiDocumentForShowdocUtils {
 	}
 
 	private static void _appendCommonResponseFieldDefinitions(ApiDefinition apiDefinition) {
-		List<NestedFieldDefinition> commonFieldDefinitions = new ArrayList<>();
+		List<PlainFieldDefinition> commonFieldDefinitions = new ArrayList<>();
 		commonFieldDefinitions.add(_buildFieldDefinition("错误码(0正常,非0错误)", "code", "Integer", true,
 				MicroApiReserveResponseCodeEnum.success.getCode()));
 		commonFieldDefinitions.add(_buildFieldDefinition("错误提示", "message", "String", true,
 				MicroApiReserveResponseCodeEnum.success.getMessage()));
 		if (apiDefinition.getResponseDefinition() == null) {
-			NestedEntityDefinition responseDefinition = new NestedEntityDefinition();
+			PlainEntityDefinition responseDefinition = new PlainEntityDefinition();
 			responseDefinition.setFieldDefinitions(commonFieldDefinitions);
 			apiDefinition.setResponseDefinition(responseDefinition);
 		} else {
@@ -205,9 +203,9 @@ public class ApiDocumentForShowdocUtils {
 		}
 	}
 
-	private static NestedFieldDefinition _buildFieldDefinition(String comment, String name, String javaType,
+	private static PlainFieldDefinition _buildFieldDefinition(String comment, String name, String javaType,
 			boolean required, Object example) {
-		NestedFieldDefinition fieldDefinition = new NestedFieldDefinition();
+		PlainFieldDefinition fieldDefinition = new PlainFieldDefinition();
 		fieldDefinition.setComment(comment);
 		fieldDefinition.setJavaType(javaType);
 		fieldDefinition.setName(name);
@@ -229,9 +227,9 @@ public class ApiDocumentForShowdocUtils {
 		}
 	}
 
-	private static JSONObject _buildExampleInJson(NestedEntityDefinition entityDefinition) {
+	private static JSONObject _buildExampleInJson(PlainEntityDefinition entityDefinition) {
 		JSONObject json = new JSONObject(16, true);
-		for (NestedFieldDefinition fieldDefinition : entityDefinition.getFieldDefinitions()) {
+		for (PlainFieldDefinition fieldDefinition : entityDefinition.getFieldDefinitions()) {
 			json.put(fieldDefinition.getName(), fieldDefinition.getExample());
 		}
 		return json;

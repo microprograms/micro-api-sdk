@@ -30,7 +30,7 @@ import com.github.microprograms.micro_api_runtime.model.Request;
 import com.github.microprograms.micro_api_runtime.model.Response;
 import com.github.microprograms.micro_api_runtime.utils.MicroApiUtils;
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
-import com.github.microprograms.micro_nested_data_model_sdk.model.NestedFieldDefinition;
+import com.github.microprograms.micro_model_sdk.model.PlainFieldDefinition;
 
 public class DefaultCallback implements Callback {
 
@@ -44,7 +44,7 @@ public class DefaultCallback implements Callback {
         BlockStmt blockStmt = new BlockStmt();
         if (apiDefinition.getRequestDefinition() != null) {
             blockStmt.addStatement(new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Req"), "req"), new CastExpr(new ClassOrInterfaceType("Req"), new NameExpr("request")), Operator.ASSIGN));
-            for (NestedFieldDefinition x : apiDefinition.getRequestDefinition().getFieldDefinitions()) {
+            for (PlainFieldDefinition x : apiDefinition.getRequestDefinition().getFieldDefinitions()) {
                 if (x.getRequired()) {
                     cu.addImport(MicroApiUtils.class.getName());
                     NodeList<Expression> arguments = new NodeList<>();

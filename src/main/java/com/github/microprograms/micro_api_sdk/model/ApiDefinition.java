@@ -2,14 +2,14 @@ package com.github.microprograms.micro_api_sdk.model;
 
 import java.util.Map;
 
-import com.github.microprograms.micro_nested_data_model_sdk.model.NestedEntityDefinition;
+import com.github.microprograms.micro_model_sdk.model.PlainEntityDefinition;
 
 public class ApiDefinition {
 	private String name;
 	private String comment;
 	private String description;
-	private NestedEntityDefinition requestDefinition;
-	private NestedEntityDefinition responseDefinition;
+	private PlainEntityDefinition requestDefinition;
+	private PlainEntityDefinition responseDefinition;
 	private Map<String, Object> ext;
 
 	public String getName() {
@@ -36,19 +36,19 @@ public class ApiDefinition {
 		this.description = description;
 	}
 
-	public NestedEntityDefinition getRequestDefinition() {
+	public PlainEntityDefinition getRequestDefinition() {
 		return requestDefinition;
 	}
 
-	public void setRequestDefinition(NestedEntityDefinition requestDefinition) {
+	public void setRequestDefinition(PlainEntityDefinition requestDefinition) {
 		this.requestDefinition = requestDefinition;
 	}
 
-	public NestedEntityDefinition getResponseDefinition() {
+	public PlainEntityDefinition getResponseDefinition() {
 		return responseDefinition;
 	}
 
-	public void setResponseDefinition(NestedEntityDefinition responseDefinition) {
+	public void setResponseDefinition(PlainEntityDefinition responseDefinition) {
 		this.responseDefinition = responseDefinition;
 	}
 
@@ -59,5 +59,4 @@ public class ApiDefinition {
 	public void setExt(Map<String, Object> ext) {
 		this.ext = ext;
 	}
-
 }

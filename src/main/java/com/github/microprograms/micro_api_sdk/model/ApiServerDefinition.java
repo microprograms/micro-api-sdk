@@ -2,7 +2,7 @@ package com.github.microprograms.micro_api_sdk.model;
 
 import java.util.List;
 
-import com.github.microprograms.micro_relational_data_model_sdk.model.PlainEntityDefinition;
+import com.github.microprograms.micro_model_sdk.model.PlainEntityDefinition;
 
 public class ApiServerDefinition {
 	private String comment;
