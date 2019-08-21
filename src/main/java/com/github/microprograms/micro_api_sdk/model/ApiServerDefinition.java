@@ -16,6 +16,7 @@ public class ApiServerDefinition {
 	private ServerAddressDefinition serverAddressDefinition;
 	private ShowdocDefinition showdocDefinition;
 	private DeployDefinition deployDefinition;
+	private List<ChangeLog> changeLogs;
 
 	public String getComment() {
 		return comment;
@@ -103,5 +104,13 @@ public class ApiServerDefinition {
 
 	public void setDeployDefinition(DeployDefinition deployDefinition) {
 		this.deployDefinition = deployDefinition;
+	}
+
+	public List<ChangeLog> getChangeLogs() {
+		return changeLogs;
+	}
+
+	public void setChangeLogs(List<ChangeLog> changeLogs) {
+		this.changeLogs = changeLogs;
 	}
 }
