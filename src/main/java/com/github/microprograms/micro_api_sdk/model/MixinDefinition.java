@@ -1,6 +1,10 @@
 package com.github.microprograms.micro_api_sdk.model;
 
-public class MixinDefinition {
+import java.io.Serializable;
+
+public class MixinDefinition implements Serializable {
+	private static final long serialVersionUID = 1L;
+
     private String target;
     private String source;
 

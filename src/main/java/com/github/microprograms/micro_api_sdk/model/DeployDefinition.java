@@ -1,6 +1,10 @@
 package com.github.microprograms.micro_api_sdk.model;
 
-public class DeployDefinition {
+import java.io.Serializable;
+
+public class DeployDefinition implements Serializable {
+	private static final long serialVersionUID = 1L;
+
     private String localMavenProjectHome;
     private int localSshPort;
     private String localSshUser;

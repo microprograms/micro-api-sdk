@@ -1,8 +1,11 @@
 package com.github.microprograms.micro_api_sdk.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ChangeLog {
+public class ChangeLog implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private String version;
 	private List<String> items;
 

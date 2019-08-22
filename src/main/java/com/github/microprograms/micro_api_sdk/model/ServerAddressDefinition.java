@@ -1,6 +1,10 @@
 package com.github.microprograms.micro_api_sdk.model;
 
-public class ServerAddressDefinition {
+import java.io.Serializable;
+
+public class ServerAddressDefinition implements Serializable {
+	private static final long serialVersionUID = 1L;
+
     private String host;
     private int port;
     private String url;

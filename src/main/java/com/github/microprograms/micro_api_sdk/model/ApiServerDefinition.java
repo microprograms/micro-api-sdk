@@ -1,10 +1,13 @@
 package com.github.microprograms.micro_api_sdk.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.github.microprograms.micro_model_sdk.model.PlainEntityDefinition;
 
-public class ApiServerDefinition {
+public class ApiServerDefinition implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private String comment;
 	private String description;
 	private String version;

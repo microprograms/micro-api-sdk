@@ -1,6 +1,10 @@
 package com.github.microprograms.micro_api_sdk.model;
 
-public class ShowdocDefinition {
+import java.io.Serializable;
+
+public class ShowdocDefinition implements Serializable {
+	private static final long serialVersionUID = 1L;
+
     private String apiKey;
     private String apiToken;
     private String url;
