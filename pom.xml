@@ -6,7 +6,7 @@
 
 	<groupId>com.github.microprograms</groupId>
 	<artifactId>micro-api-sdk</artifactId>
-	<version>5.3.0</version>
+	<version>6.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>micro-api-sdk</name>
@@ -69,7 +69,7 @@
 		<dependency>
 			<groupId>com.github.microprograms</groupId>
 			<artifactId>micro-api-runtime</artifactId>
-			<version>5.0.0</version>
+			<version>6.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.microprograms</groupId>
@@ -77,9 +77,9 @@
 			<version>1.1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.jcabi</groupId>
-			<artifactId>jcabi-ssh</artifactId>
-			<version>1.6</version>
+			<groupId>com.github.microprograms</groupId>
+			<artifactId>micro-oss-mysql</artifactId>
+			<version>2.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.jcabi</groupId>
@@ -100,11 +100,6 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>6.11</version>
 		</dependency>
 	</dependencies>
 

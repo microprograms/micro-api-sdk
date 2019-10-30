@@ -5,21 +5,23 @@ import java.util.List;
 
 import com.github.microprograms.micro_model_sdk.model.PlainEntityDefinition;
 
-public class ApiServerDefinition implements Serializable {
+public class ModuleDefinition implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String comment;
 	private String description;
 	private String version;
-	private String javaPackageName;
+	/**
+	 * 唯一标识符
+	 */
+	private String name;
+	private List<ChangeLog> changeLogs;
 	private List<ApiDefinition> apiDefinitions;
 	private List<ErrorCodeDefinition> errorCodeDefinitions;
 	private List<PlainEntityDefinition> modelDefinitions;
 	private List<MixinDefinition> mixinDefinitions;
 	private ServerAddressDefinition serverAddressDefinition;
 	private ShowdocDefinition showdocDefinition;
-	private DeployDefinition deployDefinition;
-	private List<ChangeLog> changeLogs;
 
 	public String getComment() {
 		return comment;
@@ -45,12 +47,20 @@ public class ApiServerDefinition implements Serializable {
 		this.version = version;
 	}
 
-	public String getJavaPackageName() {
-		return javaPackageName;
+	public String getName() {
+		return name;
 	}
 
-	public void setJavaPackageName(String javaPackageName) {
-		this.javaPackageName = javaPackageName;
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public List<ChangeLog> getChangeLogs() {
+		return changeLogs;
+	}
+
+	public void setChangeLogs(List<ChangeLog> changeLogs) {
+		this.changeLogs = changeLogs;
 	}
 
 	public List<ApiDefinition> getApiDefinitions() {
@@ -99,21 +109,5 @@ public class ApiServerDefinition implements Serializable {
 
 	public void setShowdocDefinition(ShowdocDefinition showdocDefinition) {
 		this.showdocDefinition = showdocDefinition;
-	}
-
-	public DeployDefinition getDeployDefinition() {
-		return deployDefinition;
-	}
-
-	public void setDeployDefinition(DeployDefinition deployDefinition) {
-		this.deployDefinition = deployDefinition;
-	}
-
-	public List<ChangeLog> getChangeLogs() {
-		return changeLogs;
-	}
-
-	public void setChangeLogs(List<ChangeLog> changeLogs) {
-		this.changeLogs = changeLogs;
 	}
 }

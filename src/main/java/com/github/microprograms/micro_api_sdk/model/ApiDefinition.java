@@ -8,6 +8,9 @@ import com.github.microprograms.micro_model_sdk.model.PlainEntityDefinition;
 public class ApiDefinition implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * 唯一标识符
+	 */
 	private String name;
 	private String comment;
 	private String description;

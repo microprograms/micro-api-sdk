@@ -5,31 +5,28 @@ import java.io.Serializable;
 public class ErrorCodeDefinition implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-    private String name;
-    private int code;
-    private String message;
+	/**
+	 * 唯一标识符
+	 */
+	private String code;
+	/**
+	 * 错误提示信息
+	 */
+	private String message;
 
-    public String getName() {
-        return name;
-    }
+	public String getCode() {
+		return code;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setCode(String code) {
+		this.code = code;
+	}
 
-    public int getCode() {
-        return code;
-    }
+	public String getMessage() {
+		return message;
+	}
 
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
+	public void setMessage(String message) {
+		this.message = message;
+	}
 }
