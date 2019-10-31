@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.AssignExpr.Operator;
 import com.github.javaparser.ast.expr.CastExpr;
@@ -53,6 +55,7 @@ import com.github.microprograms.micro_api_sdk.model.ModuleDefinition;
 import com.github.microprograms.micro_api_sdk.model.ServerAddressDefinition;
 import com.github.microprograms.micro_api_sdk.model.ShowdocDefinition;
 import com.github.microprograms.micro_model_sdk.MicroModelSdk;
+import com.github.microprograms.micro_model_sdk.annotations.Comment;
 import com.github.microprograms.micro_model_sdk.model.PlainEntityDefinition;
 import com.github.microprograms.micro_model_sdk.model.PlainFieldDefinition;
 import com.jcabi.http.request.JdkRequest;
@@ -469,7 +472,7 @@ public class ApiSdk {
 				MethodDeclaration executeMethod = apiClassDeclaration.addMethod("execute", Modifier.PUBLIC);
 				executeMethod.setType(Response.class);
 				executeMethod.addParameter(Request.class, "request");
-				executeMethod.addThrownException(PassthroughException.class);
+				executeMethod.addThrownException(Exception.class);
 				executeMethod.addMarkerAnnotation(Override.class);
 				BlockStmt block = new BlockStmt();
 				if (apiDefinition.getRequestDefinition() != null) {
@@ -503,11 +506,12 @@ public class ApiSdk {
 						getResponseType(apiDefinition))) {
 					return;
 				}
-				cu.addImport(ReserveResponseCodeEnum.class.getName());
+				cu.addImport(ReserveResponseCodeEnum.class);
+				cu.addImport(PassthroughException.class);
 				MethodDeclaration coreMethod = apiClassDeclaration.addMethod("core", Modifier.PRIVATE);
 				coreMethod.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
 				coreMethod.addParameter(new ClassOrInterfaceType(getResponseType(apiDefinition)), "resp");
-				coreMethod.addThrownException(PassthroughException.class);
+				coreMethod.addThrownException(Exception.class);
 				BlockStmt block = new BlockStmt();
 				block.addStatement(new ThrowStmt(new ObjectCreationExpr(null,
 						new ClassOrInterfaceType(PassthroughException.class.getSimpleName()),
@@ -582,23 +586,23 @@ public class ApiSdk {
 			String apiClassName = _getApiClassName(apiDefinition);
 			File javaFile = JavaParserUtils.buildJavaSourceFile(srcFolder, javaPackageName, apiClassName);
 			CompilationUnit cu = null;
+			ClassOrInterfaceDeclaration apiClass = null;
 			if (javaFile.exists()) {
 				cu = JavaParser.parse(javaFile, encoding);
-				ClassOrInterfaceDeclaration apiClass = _getApiClass(cu);
-				updateStrategy.updateCoreMethod(apiClass, cu, apiDefinition);
-				updateStrategy.updateExecuteMethod(apiClass, cu, apiDefinition);
-				_deleteReqAndRespInnerClass(apiClass);
-				_createReqAndRespInnerClass(apiClass, cu, apiDefinition);
+				apiClass = _getApiClass(cu);
 			} else {
 				javaFile.getParentFile().mkdirs();
 				javaFile.createNewFile();
 				cu = new CompilationUnit(javaPackageName);
-				ClassOrInterfaceDeclaration apiClass = cu.addClass(apiClassName, Modifier.PUBLIC);
+				apiClass = cu.addClass(apiClassName, Modifier.PUBLIC);
 				apiClass.addImplementedType(Api.class);
-				updateStrategy.updateCoreMethod(apiClass, cu, apiDefinition);
-				updateStrategy.updateExecuteMethod(apiClass, cu, apiDefinition);
-				_createReqAndRespInnerClass(apiClass, cu, apiDefinition);
 			}
+			updateStrategy.updateCoreMethod(apiClass, cu, apiDefinition);
+			updateStrategy.updateExecuteMethod(apiClass, cu, apiDefinition);
+			_deleteApiComment(apiClass);
+			_createApiComment(apiClass, cu, apiDefinition);
+			_deleteReqAndRespInnerClass(apiClass);
+			_createReqAndRespInnerClass(apiClass, cu, apiDefinition);
 			JavaParserUtils.write(cu, javaFile, encoding);
 		}
 
@@ -613,6 +617,18 @@ public class ApiSdk {
 				}
 			}
 			return null;
+		}
+
+		private static void _deleteApiComment(ClassOrInterfaceDeclaration apiClass) {
+			Optional<AnnotationExpr> optional = apiClass.getAnnotationByClass(Comment.class);
+			if (optional.isPresent()) {
+				optional.get().remove();
+			}
+		}
+
+		private static void _createApiComment(ClassOrInterfaceDeclaration apiClass, CompilationUnit cu,
+				ApiDefinition apiDefinition) {
+			apiClass.addSingleMemberAnnotation(Comment.class, "\"" + apiDefinition.getComment() + "\"");
 		}
 
 		private static void _deleteReqAndRespInnerClass(ClassOrInterfaceDeclaration apiClassDeclaration) {
