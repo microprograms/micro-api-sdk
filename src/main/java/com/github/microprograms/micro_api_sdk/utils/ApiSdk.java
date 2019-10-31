@@ -2,6 +2,7 @@ package com.github.microprograms.micro_api_sdk.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,28 +32,23 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.AssignExpr.Operator;
-import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.microprograms.micro_api_runtime.annotations.Comment;
 import com.github.microprograms.micro_api_runtime.annotations.Description;
+import com.github.microprograms.micro_api_runtime.annotations.MicroApi;
 import com.github.microprograms.micro_api_runtime.annotations.Required;
 import com.github.microprograms.micro_api_runtime.enums.ReserveResponseCodeEnum;
 import com.github.microprograms.micro_api_runtime.exception.PassthroughException;
-import com.github.microprograms.micro_api_runtime.model.Api;
 import com.github.microprograms.micro_api_runtime.model.Request;
 import com.github.microprograms.micro_api_runtime.model.Response;
 import com.github.microprograms.micro_api_runtime.model.ResponseCode;
@@ -68,7 +64,7 @@ import com.github.microprograms.micro_api_sdk.model.ShowdocDefinition;
 import com.jcabi.http.request.JdkRequest;
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.matchprocessor.ImplementingClassMatchProcessor;
+import io.github.lukehutch.fastclasspathscanner.matchprocessor.ClassAnnotationMatchProcessor;
 
 public class ApiSdk {
 	private static final Charset encoding = Charset.forName("utf8");
@@ -437,9 +433,6 @@ public class ApiSdk {
 			abstract void updateExecuteMethod(ClassOrInterfaceDeclaration apiClassDeclaration, CompilationUnit cu,
 					ApiDefinition apiDefinition);
 
-			abstract void updateCoreMethod(ClassOrInterfaceDeclaration apiClassDeclaration, CompilationUnit cu,
-					ApiDefinition apiDefinition);
-
 			protected void removeMethod(ClassOrInterfaceDeclaration apiClassDeclaration, String name,
 					String... paramTypes) {
 				for (MethodDeclaration x : apiClassDeclaration.getMethodsBySignature(name, paramTypes)) {
@@ -449,7 +442,8 @@ public class ApiSdk {
 
 			protected boolean existMethod(ClassOrInterfaceDeclaration apiClassDeclaration, String name,
 					String... paramTypes) {
-				return !apiClassDeclaration.getMethodsBySignature(name, paramTypes).isEmpty();
+				List<MethodDeclaration> list = apiClassDeclaration.getMethodsBySignature(name, paramTypes);
+				return list != null && !list.isEmpty();
 			}
 
 			protected MethodDeclaration getMethod(ClassOrInterfaceDeclaration apiClassDeclaration, String name,
@@ -475,57 +469,22 @@ public class ApiSdk {
 			@Override
 			public void updateExecuteMethod(ClassOrInterfaceDeclaration apiClassDeclaration, CompilationUnit cu,
 					ApiDefinition apiDefinition) {
-				removeMethod(apiClassDeclaration, "execute", "Request");
-				MethodDeclaration executeMethod = apiClassDeclaration.addMethod("execute", Modifier.PUBLIC);
-				executeMethod.setType(Response.class);
-				executeMethod.addParameter(Request.class, "request");
-				executeMethod.addThrownException(Exception.class);
-				executeMethod.addMarkerAnnotation(Override.class);
-				BlockStmt block = new BlockStmt();
-				if (apiDefinition.getRequestDefinition() != null) {
-					block.addStatement(new AssignExpr(
-							new VariableDeclarationExpr(new ClassOrInterfaceType("Req"), "req"),
-							new CastExpr(new ClassOrInterfaceType("Req"), new NameExpr("request")), Operator.ASSIGN));
-				} else {
-					block.addStatement(
-							new AssignExpr(new VariableDeclarationExpr(new ClassOrInterfaceType("Request"), "req"),
-									new NameExpr("request"), Operator.ASSIGN));
-				}
-				if (apiDefinition.getResponseDefinition() != null) {
-					block.addStatement(new AssignExpr(
-							new VariableDeclarationExpr(new ClassOrInterfaceType("Resp"), "resp"),
-							new ObjectCreationExpr().setType(new ClassOrInterfaceType("Resp")), Operator.ASSIGN));
-				} else {
-					block.addStatement(new AssignExpr(
-							new VariableDeclarationExpr(new ClassOrInterfaceType("Response"), "resp"),
-							new ObjectCreationExpr().setType(new ClassOrInterfaceType("Response")), Operator.ASSIGN));
-				}
-				block.addStatement(new MethodCallExpr(null, new SimpleName("core"),
-						NodeList.nodeList(new NameExpr("req"), new NameExpr("resp"))));
-				block.addStatement(new ReturnStmt(new NameExpr("resp")));
-				executeMethod.setBody(block);
-			}
-
-			@Override
-			public void updateCoreMethod(ClassOrInterfaceDeclaration apiClassDeclaration, CompilationUnit cu,
-					ApiDefinition apiDefinition) {
-				if (existMethod(apiClassDeclaration, "core", getRequestType(apiDefinition),
-						getResponseType(apiDefinition))) {
+				if (existMethod(apiClassDeclaration, "execute", String.class.getSimpleName())) {
 					return;
 				}
 				cu.addImport(ReserveResponseCodeEnum.class);
 				cu.addImport(PassthroughException.class);
-				MethodDeclaration coreMethod = apiClassDeclaration.addMethod("core", Modifier.PRIVATE);
-				coreMethod.addParameter(new ClassOrInterfaceType(getRequestType(apiDefinition)), "req");
-				coreMethod.addParameter(new ClassOrInterfaceType(getResponseType(apiDefinition)), "resp");
-				coreMethod.addThrownException(Exception.class);
+				MethodDeclaration executeMethod = apiClassDeclaration.addMethod("execute", Modifier.PUBLIC);
+				executeMethod.setType(String.class);
+				executeMethod.addParameter(String.class, "request");
+				executeMethod.addThrownException(Exception.class);
 				BlockStmt block = new BlockStmt();
 				block.addStatement(new ThrowStmt(new ObjectCreationExpr(null,
 						new ClassOrInterfaceType(PassthroughException.class.getSimpleName()),
 						NodeList.nodeList(
 								new FieldAccessExpr(new NameExpr(ReserveResponseCodeEnum.class.getSimpleName()),
 										ReserveResponseCodeEnum.api_not_implemented_exception.name())))));
-				coreMethod.setBody(block);
+				executeMethod.setBody(block);
 			}
 		}
 
@@ -540,9 +499,9 @@ public class ApiSdk {
 		public static void deleteUnusedApis(ModuleDefinition moduleDefinition, String srcFolder, String javaPackageName)
 				throws IOException {
 			new FastClasspathScanner(javaPackageName) //
-					.matchClassesImplementing(Api.class, new ImplementingClassMatchProcessor<Api>() {
+					.matchClassesWithAnnotation(MicroApi.class, new ClassAnnotationMatchProcessor() {
 						@Override
-						public void processMatch(Class<? extends Api> apiClass) {
+						public void processMatch(Class<?> apiClass) {
 							String apiClassName = apiClass.getSimpleName();
 							if (_getApiDefinitionByJavaClassName(apiClassName, moduleDefinition) != null) {
 								return;
@@ -602,12 +561,10 @@ public class ApiSdk {
 				javaFile.createNewFile();
 				cu = new CompilationUnit(javaPackageName);
 				apiClass = cu.addClass(apiClassName, Modifier.PUBLIC);
-				apiClass.addImplementedType(Api.class);
 			}
-			updateStrategy.updateCoreMethod(apiClass, cu, apiDefinition);
 			updateStrategy.updateExecuteMethod(apiClass, cu, apiDefinition);
-			_deleteApiComment(apiClass);
-			_createApiComment(apiClass, cu, apiDefinition);
+			_deleteApiAnnotation(apiClass);
+			_createApiAnnotation(apiClass, cu, apiDefinition, moduleDefinition);
 			_deleteReqAndRespInnerClass(apiClass);
 			_createReqAndRespInnerClass(apiClass, cu, apiDefinition);
 			JavaParserUtils.write(cu, javaFile, encoding);
@@ -619,22 +576,30 @@ public class ApiSdk {
 
 		private static ClassOrInterfaceDeclaration _getApiClass(CompilationUnit cu) {
 			for (ClassOrInterfaceDeclaration x : cu.getChildNodesByType(ClassOrInterfaceDeclaration.class)) {
-				if (x.getImplementedTypes().contains(new ClassOrInterfaceType(Api.class.getSimpleName()))) {
+				if (x.isAnnotationPresent(MicroApi.class)) {
 					return x;
 				}
 			}
 			return null;
 		}
 
-		private static void _deleteApiComment(ClassOrInterfaceDeclaration apiClass) {
-			Optional<AnnotationExpr> optional = apiClass.getAnnotationByClass(Comment.class);
+		private static void _deleteApiAnnotation(ClassOrInterfaceDeclaration apiClass) {
+			_deleteApiAnnotation(apiClass, MicroApi.class);
+			_deleteApiAnnotation(apiClass, Comment.class);
+		}
+
+		private static void _deleteApiAnnotation(ClassOrInterfaceDeclaration apiClass,
+				Class<? extends Annotation> annotationClass) {
+			Optional<AnnotationExpr> optional = apiClass.getAnnotationByClass(annotationClass);
 			if (optional.isPresent()) {
 				optional.get().remove();
 			}
 		}
 
-		private static void _createApiComment(ClassOrInterfaceDeclaration apiClass, CompilationUnit cu,
-				ApiDefinition apiDefinition) {
+		private static void _createApiAnnotation(ClassOrInterfaceDeclaration apiClass, CompilationUnit cu,
+				ApiDefinition apiDefinition, ModuleDefinition moduleDefinition) {
+			apiClass.addAndGetAnnotation(MicroApi.class).addPair("version",
+					"\"" + moduleDefinition.getVersion() + "\"");
 			apiClass.addSingleMemberAnnotation(Comment.class, "\"" + apiDefinition.getComment() + "\"");
 		}
 
