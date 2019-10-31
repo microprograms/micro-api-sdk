@@ -3,8 +3,6 @@ package com.github.microprograms.micro_api_sdk.model;
 import java.io.Serializable;
 import java.util.List;
 
-import com.github.microprograms.micro_model_sdk.model.PlainEntityDefinition;
-
 public class ModuleDefinition implements Serializable {
 	private static final long serialVersionUID = 1L;
 

@@ -7,10 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_api_sdk.model.ModuleDefinition;
-import com.github.microprograms.micro_model_sdk.MicroModelSdk;
-import com.github.microprograms.micro_model_sdk.model.PlainEntityDefinition;
-import com.github.microprograms.micro_model_sdk.model.PlainFieldDefinition;
-import com.github.microprograms.micro_model_sdk.model.PlainModelerDefinition;
+import com.github.microprograms.micro_api_sdk.model.PlainEntityDefinition;
+import com.github.microprograms.micro_api_sdk.model.PlainFieldDefinition;
+import com.github.microprograms.micro_api_sdk.model.PlainModelerDefinition;
 
 public class FieldMetas {
 	private List<FieldMeta> list = new ArrayList<>();
@@ -92,9 +91,9 @@ public class FieldMetas {
 		return fieldMetas;
 	}
 
-	public static FieldMetas parseMicroModelFieldMetas(String modelConfigFilePath, String modelJavaClassName)
+	public static FieldMetas parseMicroModelFieldMetas(String configFilePath, String modelJavaClassName)
 			throws Exception {
-		return parseMicroModelFieldMetas(MicroModelSdk.buildModelerDefinition(modelConfigFilePath), modelJavaClassName);
+		return parseMicroModelFieldMetas(ModelSdk.build(configFilePath), modelJavaClassName);
 	}
 
 	public static FieldMetas parseMicroModelFieldMetas(PlainModelerDefinition modelerDefinition,

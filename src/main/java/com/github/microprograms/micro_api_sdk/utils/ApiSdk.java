@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +25,17 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.AssignExpr.Operator;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.IntegerLiteralExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
@@ -41,6 +47,9 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.microprograms.micro_api_runtime.annotations.Comment;
+import com.github.microprograms.micro_api_runtime.annotations.Description;
+import com.github.microprograms.micro_api_runtime.annotations.Required;
 import com.github.microprograms.micro_api_runtime.enums.ReserveResponseCodeEnum;
 import com.github.microprograms.micro_api_runtime.exception.PassthroughException;
 import com.github.microprograms.micro_api_runtime.model.Api;
@@ -52,12 +61,10 @@ import com.github.microprograms.micro_api_sdk.model.ChangeLog;
 import com.github.microprograms.micro_api_sdk.model.ErrorCodeDefinition;
 import com.github.microprograms.micro_api_sdk.model.MixinDefinition;
 import com.github.microprograms.micro_api_sdk.model.ModuleDefinition;
+import com.github.microprograms.micro_api_sdk.model.PlainEntityDefinition;
+import com.github.microprograms.micro_api_sdk.model.PlainFieldDefinition;
 import com.github.microprograms.micro_api_sdk.model.ServerAddressDefinition;
 import com.github.microprograms.micro_api_sdk.model.ShowdocDefinition;
-import com.github.microprograms.micro_model_sdk.MicroModelSdk;
-import com.github.microprograms.micro_model_sdk.annotations.Comment;
-import com.github.microprograms.micro_model_sdk.model.PlainEntityDefinition;
-import com.github.microprograms.micro_model_sdk.model.PlainFieldDefinition;
 import com.jcabi.http.request.JdkRequest;
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
@@ -649,15 +656,56 @@ public class ApiSdk {
 				reqInnerClassDeclaration.addModifier(Modifier.PUBLIC, Modifier.STATIC).setName("Req")
 						.addExtendedType(Request.class);
 				apiClassDeclaration.addMember(reqInnerClassDeclaration);
-				MicroModelSdk.fillFields(reqInnerClassDeclaration, apiDefinition.getRequestDefinition());
+				_fillFields(reqInnerClassDeclaration, apiDefinition.getRequestDefinition());
 			}
 			if (apiDefinition.getResponseDefinition() != null) {
 				ClassOrInterfaceDeclaration respInnerClassDeclaration = new ClassOrInterfaceDeclaration();
 				respInnerClassDeclaration.addModifier(Modifier.PUBLIC, Modifier.STATIC).setName("Resp")
 						.addExtendedType(Response.class);
 				apiClassDeclaration.addMember(respInnerClassDeclaration);
-				MicroModelSdk.fillFields(respInnerClassDeclaration, apiDefinition.getResponseDefinition());
+				_fillFields(respInnerClassDeclaration, apiDefinition.getResponseDefinition());
 			}
+		}
+
+		private static void _fillFields(ClassOrInterfaceDeclaration classDeclaration,
+				PlainEntityDefinition entityDefinition) {
+			for (PlainFieldDefinition x : entityDefinition.getFieldDefinitions()) {
+				FieldDeclaration fieldDeclaration = new FieldDeclaration(EnumSet.of(Modifier.PRIVATE),
+						new VariableDeclarator(new ClassOrInterfaceType(x.getJavaType()), x.getName(),
+								_buildDefaultValueExpression(x)));
+				classDeclaration.addMember(fieldDeclaration);
+				fieldDeclaration.createGetter();
+				fieldDeclaration.createSetter();
+				if (StringUtils.isNotBlank(x.getComment())) {
+					fieldDeclaration.addSingleMemberAnnotation(Comment.class, "\"" + x.getComment() + "\"");
+				}
+				if (StringUtils.isNotBlank(x.getDescription())) {
+					fieldDeclaration.addSingleMemberAnnotation(Description.class, "\"" + x.getDescription() + "\"");
+				}
+				if (x.getRequired()) {
+					fieldDeclaration.addMarkerAnnotation(Required.class);
+				} else {
+					fieldDeclaration.addSingleMemberAnnotation(Required.class, String.valueOf(false));
+				}
+			}
+		}
+
+		private static Expression _buildDefaultValueExpression(PlainFieldDefinition fieldDefinition) {
+			Object defaultValue = fieldDefinition.getDefaultValue();
+			if (defaultValue == null) {
+				return null;
+			}
+			String javaType = fieldDefinition.getJavaType();
+			if (javaType.equals("Integer")) {
+				return new IntegerLiteralExpr(Integer.valueOf(defaultValue.toString()));
+			}
+			if (javaType.equals("Long")) {
+				return new LongLiteralExpr(Long.valueOf(defaultValue.toString()) + "L");
+			}
+			if (javaType.equals("String")) {
+				return new StringLiteralExpr(defaultValue.toString());
+			}
+			return null;
 		}
 
 		/**
