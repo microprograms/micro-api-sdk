@@ -476,6 +476,7 @@ public class ApiSdk {
 				cu.addImport(ReserveResponseCodeEnum.class);
 				cu.addImport(PassthroughException.class);
 				MethodDeclaration executeMethod = apiClassDeclaration.addMethod("execute", Modifier.PUBLIC);
+				executeMethod.addMarkerAnnotation(Override.class);
 				executeMethod.setType(String.class);
 				executeMethod.addParameter(String.class, "request");
 				executeMethod.addThrownException(Exception.class);
