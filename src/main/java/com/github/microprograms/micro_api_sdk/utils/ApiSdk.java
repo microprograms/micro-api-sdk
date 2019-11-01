@@ -49,6 +49,7 @@ import com.github.microprograms.micro_api_runtime.annotations.MicroApi;
 import com.github.microprograms.micro_api_runtime.annotations.Required;
 import com.github.microprograms.micro_api_runtime.enums.ReserveResponseCodeEnum;
 import com.github.microprograms.micro_api_runtime.exception.PassthroughException;
+import com.github.microprograms.micro_api_runtime.model.Api;
 import com.github.microprograms.micro_api_runtime.model.Request;
 import com.github.microprograms.micro_api_runtime.model.Response;
 import com.github.microprograms.micro_api_runtime.model.ResponseCode;
@@ -560,7 +561,7 @@ public class ApiSdk {
 				javaFile.getParentFile().mkdirs();
 				javaFile.createNewFile();
 				cu = new CompilationUnit(javaPackageName);
-				apiClass = cu.addClass(apiClassName, Modifier.PUBLIC);
+				apiClass = cu.addClass(apiClassName, Modifier.PUBLIC).addImplementedType(Api.class);
 			}
 			updateStrategy.updateExecuteMethod(apiClass, cu, apiDefinition);
 			_deleteApiAnnotation(apiClass);
