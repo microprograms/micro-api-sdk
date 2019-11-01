@@ -616,6 +616,8 @@ public class ApiSdk {
 		private static void _createReqAndRespInnerClass(ClassOrInterfaceDeclaration apiClassDeclaration,
 				CompilationUnit cu, ApiDefinition apiDefinition) {
 			cu.addImport(List.class);
+			cu.addImport(Request.class);
+			cu.addImport(Response.class);
 			if (apiDefinition.getRequestDefinition() != null) {
 				ClassOrInterfaceDeclaration reqInnerClassDeclaration = new ClassOrInterfaceDeclaration();
 				reqInnerClassDeclaration.addModifier(Modifier.PUBLIC, Modifier.STATIC).setName("Req")
