@@ -600,8 +600,8 @@ public class ApiSdk {
 
 		private static void _createApiAnnotation(ClassOrInterfaceDeclaration apiClass, CompilationUnit cu,
 				ApiDefinition apiDefinition, ModuleDefinition moduleDefinition) {
-			apiClass.addAndGetAnnotation(MicroApi.class).addPair("version",
-					"\"" + moduleDefinition.getVersion() + "\"");
+			apiClass.addAndGetAnnotation(MicroApi.class).addPair("name", "\"" + apiDefinition.getName() + "\"")
+					.addPair("version", "\"" + moduleDefinition.getVersion() + "\"");
 			apiClass.addSingleMemberAnnotation(Comment.class, "\"" + apiDefinition.getComment() + "\"");
 		}
 
