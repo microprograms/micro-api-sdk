@@ -200,7 +200,6 @@ public class ModelSdk {
 				javaFile.getParentFile().mkdirs();
 				javaFile.createNewFile();
 				cu = new CompilationUnit(javaPackageName);
-				cu.addImport(Date.class);
 				ClassOrInterfaceDeclaration modelClassDeclaration = cu.addClass(entityDefinition.getJavaClassName(),
 						Modifier.PUBLIC);
 				modelClassDeclaration.setComment(new JavadocComment("\n * " + entityDefinition.getComment() + "\n"));
