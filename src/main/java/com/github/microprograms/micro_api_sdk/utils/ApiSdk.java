@@ -264,7 +264,7 @@ public class ApiSdk {
 			sb.append("|-----|-----|-----|-----|").append("\n");
 			_appendCommonRequestFields(apiDefinition);
 			for (PlainFieldDefinition x : apiDefinition.getRequestDefinition().getFieldDefinitions()) {
-				String filedName = Fn.databaseIdentifierSplitCase(x.getName());
+				String filedName = x.getName();
 				sb.append("|").append(filedName).append("|").append(x.getRequired() ? "是" : "否").append("|")
 						.append(_getType(x.getJavaType())).append("|").append(x.getComment()).append("|").append("\n");
 			}
@@ -280,7 +280,7 @@ public class ApiSdk {
 			sb.append("|-----|-----|-----|").append("\n");
 			_appendCommonResponseFields(apiDefinition, moduleDefinition);
 			for (PlainFieldDefinition x : apiDefinition.getResponseDefinition().getFieldDefinitions()) {
-				String filedName = Fn.databaseIdentifierSplitCase(x.getName());
+				String filedName = x.getName();
 				sb.append("|").append(filedName).append("|").append(_getType(x.getJavaType())).append("|")
 						.append(x.getComment()).append("|").append("\n");
 			}
@@ -348,7 +348,7 @@ public class ApiSdk {
 		private static JSONObject _buildRequestExampleInJson(PlainEntityDefinition entityDefinition) {
 			JSONObject json = new JSONObject();
 			for (PlainFieldDefinition fieldDefinition : entityDefinition.getFieldDefinitions()) {
-				json.put(Fn.databaseIdentifierSplitCase(fieldDefinition.getName()), fieldDefinition.getExample());
+				json.put(fieldDefinition.getName(), fieldDefinition.getExample());
 			}
 			return json;
 		}
@@ -356,7 +356,7 @@ public class ApiSdk {
 		private static JSONObject _buildResponseExampleInJson(PlainEntityDefinition entityDefinition) {
 			JSONObject json = new JSONObject();
 			for (PlainFieldDefinition fieldDefinition : entityDefinition.getFieldDefinitions()) {
-				json.put(Fn.databaseIdentifierSplitCase(fieldDefinition.getName()), fieldDefinition.getExample());
+				json.put(fieldDefinition.getName(), fieldDefinition.getExample());
 			}
 			return json;
 		}

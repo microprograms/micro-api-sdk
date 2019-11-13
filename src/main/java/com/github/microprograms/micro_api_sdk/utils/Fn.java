@@ -15,22 +15,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class Fn {
-	public static String databaseIdentifierSplitCase(String javaIdentifierCamelCase) {
-		return databaseIdentifierSplitCase("", javaIdentifierCamelCase);
-	}
-
-	public static String databaseIdentifierSplitCase(String prefix, String javaIdentifierCamelCase) {
-		StringBuilder sb = new StringBuilder(prefix);
-		for (int i = 0; i < javaIdentifierCamelCase.length(); i++) {
-			char ch = javaIdentifierCamelCase.charAt(i);
-			if (Character.isUpperCase(ch)) {
-				sb.append('_').append(Character.toLowerCase(ch));
-			} else {
-				sb.append(ch);
-			}
-		}
-		return sb.toString();
-	}
 
 	public static List<Field> minusFieldByName(List<Field> fields, List<Field> fieldsToMinus) {
 		List<Field> list = new ArrayList<>();

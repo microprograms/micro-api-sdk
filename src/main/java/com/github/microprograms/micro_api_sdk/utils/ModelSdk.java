@@ -138,11 +138,14 @@ public class ModelSdk {
 		}
 
 		private static String _getTableName(PlainEntityDefinition entityDefinition, String tablePrefix) {
-			return Fn.databaseIdentifierSplitCase(tablePrefix, entityDefinition.getJavaClassName());
+			if (StringUtils.isBlank(tablePrefix)) {
+				return entityDefinition.getJavaClassName();
+			}
+			return tablePrefix + entityDefinition.getJavaClassName();
 		}
 
 		private static String _getFieldName(PlainFieldDefinition fieldDefinition) {
-			return Fn.databaseIdentifierSplitCase(fieldDefinition.getName());
+			return fieldDefinition.getName();
 		}
 	}
 
