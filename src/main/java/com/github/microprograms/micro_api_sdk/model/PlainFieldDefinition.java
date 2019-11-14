@@ -6,15 +6,23 @@ import java.util.Map;
 public class PlainFieldDefinition implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private String name;
 	private String comment;
 	private String description;
 	private Object example;
-	private String name;
 	private String javaType;
 	private boolean required;
 	private int primaryKey;
 	private Object defaultValue;
 	private Map<String, Object> ext;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public String getComment() {
 		return comment;
@@ -38,14 +46,6 @@ public class PlainFieldDefinition implements Serializable {
 
 	public void setExample(Object example) {
 		this.example = example;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getJavaType() {

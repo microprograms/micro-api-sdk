@@ -7,15 +7,25 @@ import java.util.Map;
 public class PlainEntityDefinition implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * 唯一标识符
+	 */
+	private String name;
 	private String comment;
 	private String description;
-	private String javaClassName;
 	private List<PlainFieldDefinition> fieldDefinitions;
 	private Map<String, Object> ext;
 
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public String getComment() {
 		return comment;
-
 	}
 
 	public void setComment(String comment) {
@@ -28,14 +38,6 @@ public class PlainEntityDefinition implements Serializable {
 
 	public void setDescription(String description) {
 		this.description = description;
-	}
-
-	public String getJavaClassName() {
-		return javaClassName;
-	}
-
-	public void setJavaClassName(String javaClassName) {
-		this.javaClassName = javaClassName;
 	}
 
 	public List<PlainFieldDefinition> getFieldDefinitions() {

@@ -4,13 +4,12 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public class PlainModelerDefinition implements Serializable {
+public class PlainModelDefinition implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String comment;
 	private String description;
 	private String version;
-	private String javaPackageName;
 	private List<PlainEntityDefinition> entityDefinitions;
 	private Map<String, Object> ext;
 
@@ -36,14 +35,6 @@ public class PlainModelerDefinition implements Serializable {
 
 	public void setVersion(String version) {
 		this.version = version;
-	}
-
-	public String getJavaPackageName() {
-		return javaPackageName;
-	}
-
-	public void setJavaPackageName(String javaPackageName) {
-		this.javaPackageName = javaPackageName;
 	}
 
 	public List<PlainEntityDefinition> getEntityDefinitions() {

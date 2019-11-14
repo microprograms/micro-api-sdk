@@ -9,7 +9,7 @@ import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_api_sdk.model.ModuleDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainEntityDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainFieldDefinition;
-import com.github.microprograms.micro_api_sdk.model.PlainModelerDefinition;
+import com.github.microprograms.micro_api_sdk.model.PlainModelDefinition;
 
 public class FieldMetas {
 	private List<FieldMeta> list = new ArrayList<>();
@@ -96,10 +96,10 @@ public class FieldMetas {
 		return parseMicroModelFieldMetas(ModelSdk.build(configFilePath), modelJavaClassName);
 	}
 
-	public static FieldMetas parseMicroModelFieldMetas(PlainModelerDefinition modelerDefinition,
+	public static FieldMetas parseMicroModelFieldMetas(PlainModelDefinition modelDefinition,
 			String modelJavaClassName) {
-		for (PlainEntityDefinition x : modelerDefinition.getEntityDefinitions()) {
-			if (x.getJavaClassName().equals(modelJavaClassName)) {
+		for (PlainEntityDefinition x : modelDefinition.getEntityDefinitions()) {
+			if (x.getName().equals(modelJavaClassName)) {
 				return parseMicroModelFieldMetas(x);
 			}
 		}

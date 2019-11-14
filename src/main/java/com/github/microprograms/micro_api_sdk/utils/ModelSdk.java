@@ -23,7 +23,7 @@ import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.microprograms.micro_api_sdk.model.PlainEntityDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainFieldDefinition;
-import com.github.microprograms.micro_api_sdk.model.PlainModelerDefinition;
+import com.github.microprograms.micro_api_sdk.model.PlainModelDefinition;
 import com.github.microprograms.micro_oss_core.model.FieldDefinition;
 import com.github.microprograms.micro_oss_core.model.FieldDefinition.FieldTypeEnum;
 import com.github.microprograms.micro_oss_core.model.TableDefinition;
@@ -39,9 +39,9 @@ import com.github.microprograms.micro_oss_mysql.model.ddl.TableElementDefinition
 public class ModelSdk {
 	private static final Charset encoding = Charset.forName("utf8");
 
-	public static PlainModelerDefinition build(String configFilePath) throws IOException {
+	public static PlainModelDefinition build(String configFilePath) throws IOException {
 		String json = Fn.readFile(configFilePath, encoding);
-		return JSON.parseObject(json, PlainModelerDefinition.class);
+		return JSON.parseObject(json, PlainModelDefinition.class);
 	}
 
 	/**
@@ -52,38 +52,38 @@ public class ModelSdk {
 		/**
 		 * 把sql写到文件
 		 * 
-		 * @param modelerDefinition
+		 * @param modelDefinition
 		 * @param excludeModelNames
 		 * @param tablePrefix
 		 * @param dir
 		 * @throws Exception
 		 */
-		public static void writeToFile(PlainModelerDefinition modelerDefinition, List<String> excludeModelNames,
+		public static void writeToFile(PlainModelDefinition modelDefinition, List<String> excludeModelNames,
 				String tablePrefix, File dir) throws Exception {
 			String data = new SimpleDateFormat("yyyyMMdd").format(new Date());
-			String ver = modelerDefinition.getVersion().replaceFirst("^v", "");
+			String ver = modelDefinition.getVersion().replaceFirst("^v", "");
 			String filename = String.format("init-v%s-%s.sql", ver, data);
-			String sql = buildInitSql(modelerDefinition, excludeModelNames, tablePrefix);
+			String sql = buildInitSql(modelDefinition, excludeModelNames, tablePrefix);
 			FileUtils.writeStringToFile(new File(dir, filename), sql, encoding);
 		}
 
 		/**
 		 * 构建sql初始化脚本
 		 * 
-		 * @param modelerDefinition
+		 * @param modelDefinition
 		 * @param excludeModelNames
 		 * @param tablePrefix
 		 * @return
 		 * @throws Exception
 		 */
-		public static String buildInitSql(PlainModelerDefinition modelerDefinition, List<String> excludeModelNames,
+		public static String buildInitSql(PlainModelDefinition modelDefinition, List<String> excludeModelNames,
 				String tablePrefix) throws Exception {
 			StringBuffer sb = new StringBuffer();
-			for (PlainEntityDefinition x : modelerDefinition.getEntityDefinitions()) {
-				if (excludeModelNames.contains(x.getJavaClassName())) {
+			for (PlainEntityDefinition x : modelDefinition.getEntityDefinitions()) {
+				if (excludeModelNames.contains(x.getName())) {
 					continue;
 				}
-				sb.append(String.format("# Dump of table %s（%s）\n", x.getComment(), x.getJavaClassName()));
+				sb.append(String.format("# Dump of table %s（%s）\n", x.getComment(), x.getName()));
 				sb.append("# ------------------------------------------------------------\n\n");
 				sb.append(_buildDropTableSql(new DropTableCommand(_getTableName(x, tablePrefix)))).append("\n\n");
 				sb.append(_buildCreateTableSql(new CreateTableCommand(_buildTableDefinition(x, tablePrefix))))
@@ -139,9 +139,9 @@ public class ModelSdk {
 
 		private static String _getTableName(PlainEntityDefinition entityDefinition, String tablePrefix) {
 			if (StringUtils.isBlank(tablePrefix)) {
-				return entityDefinition.getJavaClassName();
+				return entityDefinition.getName();
 			}
-			return tablePrefix + entityDefinition.getJavaClassName();
+			return tablePrefix + entityDefinition.getName();
 		}
 
 		private static String _getFieldName(PlainFieldDefinition fieldDefinition) {
@@ -157,14 +157,14 @@ public class ModelSdk {
 		/**
 		 * 覆盖更新全部Model实体类
 		 * 
-		 * @param modelerDefinition
+		 * @param modelDefinition
 		 * @param srcFolder
 		 * @param javaPackageName
 		 * @throws Exception
 		 */
-		public static void updateAll(PlainModelerDefinition modelerDefinition, String srcFolder, String javaPackageName)
+		public static void updateAll(PlainModelDefinition modelDefinition, String srcFolder, String javaPackageName)
 				throws Exception {
-			for (PlainEntityDefinition x : modelerDefinition.getEntityDefinitions()) {
+			for (PlainEntityDefinition x : modelDefinition.getEntityDefinitions()) {
 				update(x, srcFolder, javaPackageName);
 			}
 		}
@@ -179,7 +179,7 @@ public class ModelSdk {
 		 */
 		private static void update(PlainEntityDefinition entityDefinition, String srcFolder, String javaPackageName)
 				throws IOException {
-			String entityJavaClassName = entityDefinition.getJavaClassName();
+			String entityJavaClassName = entityDefinition.getName();
 			File javaFile = JavaParserUtils.buildJavaSourceFile(srcFolder, javaPackageName, entityJavaClassName);
 			CompilationUnit cu = null;
 			if (javaFile.exists()) {
@@ -203,7 +203,7 @@ public class ModelSdk {
 				javaFile.getParentFile().mkdirs();
 				javaFile.createNewFile();
 				cu = new CompilationUnit(javaPackageName);
-				ClassOrInterfaceDeclaration modelClassDeclaration = cu.addClass(entityDefinition.getJavaClassName(),
+				ClassOrInterfaceDeclaration modelClassDeclaration = cu.addClass(entityDefinition.getName(),
 						Modifier.PUBLIC);
 				modelClassDeclaration.setComment(new JavadocComment("\n * " + entityDefinition.getComment() + "\n"));
 				fillFields(modelClassDeclaration, entityDefinition);

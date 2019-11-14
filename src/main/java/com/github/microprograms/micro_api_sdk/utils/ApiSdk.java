@@ -197,8 +197,8 @@ public class ApiSdk {
 			sb.append("## ").append("实体定义").append("\n");
 			for (int i = 0; i < moduleDefinition.getModelDefinitions().size(); i++) {
 				PlainEntityDefinition entityDefinition = moduleDefinition.getModelDefinitions().get(i);
-				sb.append("### ").append(
-						String.format("%s（%s）", entityDefinition.getComment(), entityDefinition.getJavaClassName()))
+				sb.append("### ")
+						.append(String.format("%s（%s）", entityDefinition.getComment(), entityDefinition.getName()))
 						.append("\n\n");
 				sb.append("|字段名|类型|长度|说明|").append("\n");
 				sb.append("|-----|-----|-----|-----|").append("\n");
