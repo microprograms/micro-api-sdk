@@ -29,9 +29,7 @@ import com.github.microprograms.micro_oss_core.model.FieldDefinition.FieldTypeEn
 import com.github.microprograms.micro_oss_core.model.TableDefinition;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
-import com.github.microprograms.micro_oss_mysql.model.ddl.PrimaryKeyDefinition;
-import com.github.microprograms.micro_oss_mysql.model.ddl.TableColumnDefinition;
-import com.github.microprograms.micro_oss_mysql.model.ddl.TableElementDefinition;
+import com.github.microprograms.micro_oss_mysql.utils.MysqlUtils;
 
 /**
  * 建模（表结构定义）
@@ -85,15 +83,11 @@ public class ModelSdk {
 				}
 				sb.append(String.format("# Dump of table %s（%s）\n", x.getComment(), x.getName()));
 				sb.append("# ------------------------------------------------------------\n\n");
-				sb.append(_buildDropTableSql(new DropTableCommand(_getTableName(x, tablePrefix)))).append("\n\n");
-				sb.append(_buildCreateTableSql(new CreateTableCommand(_buildTableDefinition(x, tablePrefix))))
+				sb.append(MysqlUtils.buildSql(new DropTableCommand(_getTableName(x, tablePrefix)))).append("\n\n");
+				sb.append(MysqlUtils.buildSql(new CreateTableCommand(_buildTableDefinition(x, tablePrefix))))
 						.append("\n\n");
 			}
 			return sb.toString();
-		}
-
-		private static String _buildDropTableSql(DropTableCommand command) {
-			return String.format("DROP TABLE IF EXISTS %s;", command.getTableName());
 		}
 
 		private static TableDefinition _buildTableDefinition(PlainEntityDefinition entityDefinition,
@@ -106,35 +100,6 @@ public class ModelSdk {
 			}
 			String tableName = _getTableName(entityDefinition, tablePrefix);
 			return new TableDefinition(tableName, entityDefinition.getComment(), fields);
-		}
-
-		private static String _buildCreateTableSql(CreateTableCommand command) {
-			StringBuffer sb = new StringBuffer("CREATE TABLE IF NOT EXISTS ");
-			TableDefinition tableDefinition = command.getTableDefinition();
-			sb.append(tableDefinition.getTableName());
-			sb.append("(");
-			PrimaryKeyDefinition primaryKeyDefinition = new PrimaryKeyDefinition();
-			List<TableElementDefinition> tableElementDefinitions = new ArrayList<>();
-			for (FieldDefinition fieldDefinition : tableDefinition.getFields()) {
-				boolean isPrimaryKey = fieldDefinition.getPrimaryKey() > 0;
-				if (isPrimaryKey) {
-					primaryKeyDefinition.getFiledNames().put(fieldDefinition.getPrimaryKey(),
-							fieldDefinition.getName());
-				}
-				String type = TableColumnDefinition.getMysqlDataType(fieldDefinition.getType(), isPrimaryKey);
-				if ("id".equals(fieldDefinition.getName())) {
-					type += " AUTO_INCREMENT";
-				}
-				TableColumnDefinition columnDefinition = new TableColumnDefinition(fieldDefinition.getName(),
-						fieldDefinition.getComment(), type);
-				tableElementDefinitions.add(columnDefinition);
-			}
-			tableElementDefinitions.add(primaryKeyDefinition);
-			sb.append(StringUtils.join(tableElementDefinitions, ","));
-			String tableComment = StringUtils.isBlank(tableDefinition.getComment()) ? ""
-					: tableDefinition.getComment().replaceAll("'", "''");
-			sb.append(String.format(") COMMENT='%s';", tableComment));
-			return sb.toString();
 		}
 
 		private static String _getTableName(PlainEntityDefinition entityDefinition, String tablePrefix) {
