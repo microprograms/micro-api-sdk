@@ -204,14 +204,7 @@ public class ModelSdk {
 
 		private static void fillField(ClassOrInterfaceDeclaration classDeclaration,
 				PlainFieldDefinition fieldDefinition) {
-			if (fieldDefinition.getName().equals("id") || fieldDefinition.getName().equals("createdAt")
-					|| fieldDefinition.getName().equals("updatedAt")) {
-				return;
-			}
 			String type = fieldDefinition.getJavaType();
-			if (type.equals("java.sql.Date")) {
-				type = "Date";
-			}
 			FieldDeclaration fieldDeclaration = new FieldDeclaration(EnumSet.of(Modifier.PRIVATE),
 					new VariableDeclarator(new ClassOrInterfaceType(type), fieldDefinition.getName()));
 			classDeclaration.addMember(fieldDeclaration);
