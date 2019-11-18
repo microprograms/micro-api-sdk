@@ -529,13 +529,14 @@ public class ApiSdk {
 		 * @param moduleDefinition
 		 * @param srcFolder
 		 * @param javaPackageName
+		 * @param modelJavaPackageName
 		 * @param updateStrategy
 		 * @throws IOException
 		 */
 		public static void updateAllApis(ModuleDefinition moduleDefinition, String srcFolder, String javaPackageName,
-				UpdateStrategy updateStrategy) throws IOException {
+				String modelJavaPackageName, UpdateStrategy updateStrategy) throws IOException {
 			for (ApiDefinition x : moduleDefinition.getApiDefinitions()) {
-				updateApi(x, moduleDefinition, srcFolder, javaPackageName, updateStrategy);
+				updateApi(x, moduleDefinition, srcFolder, javaPackageName, modelJavaPackageName, updateStrategy);
 			}
 		}
 
@@ -546,11 +547,12 @@ public class ApiSdk {
 		 * @param moduleDefinition
 		 * @param srcFolder
 		 * @param javaPackageName
+		 * @param modelJavaPackageName
 		 * @param updateStrategy
 		 * @throws IOException
 		 */
 		private static void updateApi(ApiDefinition apiDefinition, ModuleDefinition moduleDefinition, String srcFolder,
-				String javaPackageName, UpdateStrategy updateStrategy) throws IOException {
+				String javaPackageName, String modelJavaPackageName, UpdateStrategy updateStrategy) throws IOException {
 			String apiClassName = _getApiClassName(apiDefinition);
 			File javaFile = JavaParserUtils.buildJavaSourceFile(srcFolder, javaPackageName, apiClassName);
 			CompilationUnit cu = null;
@@ -562,6 +564,7 @@ public class ApiSdk {
 				javaFile.getParentFile().mkdirs();
 				javaFile.createNewFile();
 				cu = new CompilationUnit(javaPackageName);
+				cu.addImport(modelJavaPackageName, false, true);
 				apiClass = cu.addClass(apiClassName, Modifier.PUBLIC).addImplementedType(Api.class);
 			}
 			updateStrategy.updateExecuteMethod(apiClass, cu, apiDefinition);
