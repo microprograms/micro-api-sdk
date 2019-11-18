@@ -155,9 +155,7 @@ public class ModelSdk {
 			if (javaFile.exists()) {
 				cu = JavaParser.parse(javaFile, encoding);
 				ClassOrInterfaceDeclaration entityClassDeclaration = cu.getClassByName(entityJavaClassName).get();
-				for (BodyDeclaration<?> x : entityClassDeclaration.getMembers()) {
-					x.remove();
-				}
+				entityClassDeclaration.getMembers().clear();
 				for (PlainFieldDefinition x : entityDefinition.getFieldDefinitions()) {
 					fillField(entityClassDeclaration, x);
 				}
