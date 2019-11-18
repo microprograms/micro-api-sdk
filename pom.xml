@@ -6,7 +6,7 @@
 
 	<groupId>com.github.microprograms</groupId>
 	<artifactId>micro-api-sdk</artifactId>
-	<version>8.2.8</version>
+	<version>8.2.9</version>
 	<packaging>jar</packaging>
 
 	<name>micro-api-sdk</name>

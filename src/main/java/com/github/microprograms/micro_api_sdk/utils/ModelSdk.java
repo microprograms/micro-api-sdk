@@ -155,18 +155,11 @@ public class ModelSdk {
 				cu = JavaParser.parse(javaFile, encoding);
 				ClassOrInterfaceDeclaration entityClassDeclaration = cu.getClassByName(entityJavaClassName).get();
 				List<FieldDeclaration> fieldDeclarations = entityClassDeclaration.getFields();
-				for (PlainFieldDefinition x : entityDefinition.getFieldDefinitions()) {
-					if (existsInFieldDeclarations(fieldDeclarations, x.getName())) {
-						continue;
-					}
-					fillField(entityClassDeclaration, x);
-				}
 				for (FieldDeclaration x : fieldDeclarations) {
-					if (existsInPlainFieldDefinitions(entityDefinition.getFieldDefinitions(),
-							x.getVariable(0).getNameAsString())) {
-						continue;
-					}
 					x.remove();
+				}
+				for (PlainFieldDefinition x : entityDefinition.getFieldDefinitions()) {
+					fillField(entityClassDeclaration, x);
 				}
 			} else {
 				javaFile.getParentFile().mkdirs();
@@ -178,25 +171,6 @@ public class ModelSdk {
 				fillFields(modelClassDeclaration, entityDefinition);
 			}
 			JavaParserUtils.write(cu, javaFile, encoding);
-		}
-
-		private static boolean existsInFieldDeclarations(List<FieldDeclaration> fieldDeclarations, String fieldName) {
-			for (FieldDeclaration x : fieldDeclarations) {
-				if (x.getVariable(0).getNameAsString().equals(fieldName)) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		private static boolean existsInPlainFieldDefinitions(List<PlainFieldDefinition> fieldDefinitions,
-				String fieldName) {
-			for (PlainFieldDefinition x : fieldDefinitions) {
-				if (x.getName().equals(fieldName)) {
-					return true;
-				}
-			}
-			return false;
 		}
 
 		private static void fillFields(ClassOrInterfaceDeclaration classDeclaration,
