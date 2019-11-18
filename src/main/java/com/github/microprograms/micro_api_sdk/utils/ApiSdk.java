@@ -734,5 +734,20 @@ public class ApiSdk {
 						.addArgument(new StringLiteralExpr(errorCodeDefinition.getMessage()));
 			}
 		}
+
+		/**
+		 * 更新全部内部Model类
+		 * 
+		 * @param moduleDefinition
+		 * @param srcFolder
+		 * @param javaPackageName
+		 * @throws IOException
+		 */
+		public static void updateAllInnerModels(ModuleDefinition moduleDefinition, String srcFolder,
+				String javaPackageName) throws IOException {
+			for (PlainEntityDefinition x : moduleDefinition.getModelDefinitions()) {
+				ModelSdk.UpdateJavaSourceFile.update(x, srcFolder, javaPackageName);
+			}
+		}
 	}
 }

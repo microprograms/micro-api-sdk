@@ -142,7 +142,7 @@ public class ModelSdk {
 		 * @param javaPackageName
 		 * @throws IOException
 		 */
-		private static void update(PlainEntityDefinition entityDefinition, String srcFolder, String javaPackageName)
+		public static void update(PlainEntityDefinition entityDefinition, String srcFolder, String javaPackageName)
 				throws IOException {
 			String entityJavaClassName = entityDefinition.getName();
 			File javaFile = JavaParserUtils.buildJavaSourceFile(srcFolder, javaPackageName, entityJavaClassName);
