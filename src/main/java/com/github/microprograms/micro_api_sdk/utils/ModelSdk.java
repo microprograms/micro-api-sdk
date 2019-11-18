@@ -18,6 +18,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -154,8 +155,7 @@ public class ModelSdk {
 			if (javaFile.exists()) {
 				cu = JavaParser.parse(javaFile, encoding);
 				ClassOrInterfaceDeclaration entityClassDeclaration = cu.getClassByName(entityJavaClassName).get();
-				List<FieldDeclaration> fieldDeclarations = entityClassDeclaration.getFields();
-				for (FieldDeclaration x : fieldDeclarations) {
+				for (BodyDeclaration<?> x : entityClassDeclaration.getMembers()) {
 					x.remove();
 				}
 				for (PlainFieldDefinition x : entityDefinition.getFieldDefinitions()) {
