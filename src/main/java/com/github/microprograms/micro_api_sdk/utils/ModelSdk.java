@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +19,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.comments.JavadocComment;
@@ -35,6 +38,7 @@ import com.github.microprograms.micro_oss_mysql.utils.MysqlUtils;
  * 建模（表结构定义）
  */
 public class ModelSdk {
+	public static final String enum_field_class_name_format = "%sEnum";
 	private static final Charset encoding = Charset.forName("utf8");
 
 	public static PlainModelDefinition build(String configFilePath) throws IOException {
@@ -211,6 +215,30 @@ public class ModelSdk {
 			fieldDeclaration.setLineComment(" " + fieldDefinition.getComment());
 			fieldDeclaration.createGetter();
 			fieldDeclaration.createSetter();
+
+			fillEnumField(classDeclaration, fieldDefinition);
+		}
+
+		private static void fillEnumField(ClassOrInterfaceDeclaration classDeclaration,
+				PlainFieldDefinition fieldDefinition) {
+			Pattern pattern = Pattern.compile("[(（]([A-Za-z0-9_]+[:：][^,，:：)）]+[,，]?)+[)）]");
+			Matcher matcher = pattern.matcher(fieldDefinition.getComment());
+			if (!matcher.find()) {
+				return;
+			}
+			String enumDefinition = matcher.group();
+			String[] pairs = enumDefinition.substring(1, enumDefinition.length() - 1).split("[,，]");
+
+			EnumDeclaration enumDeclaration = new EnumDeclaration(EnumSet.of(Modifier.PUBLIC),
+					String.format(enum_field_class_name_format, StringUtils.capitalize(fieldDefinition.getName())));
+			classDeclaration.addMember(enumDeclaration);
+			for (String pair : pairs) {
+				if (StringUtils.isBlank(pair)) {
+					return;
+				}
+				String[] kv = pair.split("[:：]");
+				enumDeclaration.addEnumConstant(kv[0]).setJavadocComment(kv[1]);
+			}
 		}
 	}
 }
