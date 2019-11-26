@@ -6,7 +6,7 @@
 
 	<groupId>com.github.microprograms</groupId>
 	<artifactId>micro-api-sdk</artifactId>
-	<version>8.2.11</version>
+	<version>9.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>micro-api-sdk</name>
@@ -69,12 +69,12 @@
 		<dependency>
 			<groupId>com.github.microprograms</groupId>
 			<artifactId>micro-api-runtime</artifactId>
-			<version>8.2.0</version>
+			<version>9.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.microprograms</groupId>
 			<artifactId>micro-oss-mysql</artifactId>
-			<version>3.8.2</version>
+			<version>3.10.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.jcabi</groupId>
