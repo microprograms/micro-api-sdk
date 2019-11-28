@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
@@ -32,7 +31,6 @@ import com.github.microprograms.micro_oss_core.model.TableDefinition;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_mysql.utils.MysqlUtils;
-import com.github.microprograms.micro_refs.model.Ref;
 import com.github.microprograms.micro_refs.utils.MicroRefsUtils;
 
 import org.apache.commons.io.FileUtils;
@@ -61,15 +59,16 @@ public class ModelSdk {
 		 * @param modelDefinition
 		 * @param excludeModelNames
 		 * @param tablePrefix
+		 * @param javaPackageName
 		 * @param dir
 		 * @throws Exception
 		 */
 		public static void writeToFile(PlainModelDefinition modelDefinition, List<String> excludeModelNames,
-				String tablePrefix, File dir) throws Exception {
+				String tablePrefix, String javaPackageName, File dir) throws Exception {
 			String data = new SimpleDateFormat("yyyyMMdd").format(new Date());
 			String ver = modelDefinition.getVersion().replaceFirst("^v", "");
 			String filename = String.format("init-v%s-%s.sql", ver, data);
-			String sql = buildInitSql(modelDefinition, excludeModelNames, tablePrefix);
+			String sql = buildInitSql(modelDefinition, excludeModelNames, tablePrefix, javaPackageName);
 			FileUtils.writeStringToFile(new File(dir, filename), sql, encoding);
 		}
 
