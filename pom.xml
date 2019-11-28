@@ -4,7 +4,7 @@
 
 	<groupId>com.github.microprograms</groupId>
 	<artifactId>micro-api-sdk</artifactId>
-	<version>9.3.0</version>
+	<version>9.4.0</version>
 	<packaging>jar</packaging>
 
 	<name>micro-api-sdk</name>
@@ -68,6 +68,11 @@
 			<groupId>com.github.microprograms</groupId>
 			<artifactId>micro-api-runtime</artifactId>
 			<version>9.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.microprograms</groupId>
+			<artifactId>micro-refs</artifactId>
+			<version>5.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.microprograms</groupId>

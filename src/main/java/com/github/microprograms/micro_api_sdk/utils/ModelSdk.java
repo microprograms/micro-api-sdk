@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
@@ -22,6 +23,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.microprograms.micro_api_sdk.model.PlainEntityDefinition;
+import com.github.microprograms.micro_api_sdk.model.PlainEntityRefDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainFieldDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainModelDefinition;
 import com.github.microprograms.micro_oss_core.model.FieldDefinition;
@@ -30,6 +32,8 @@ import com.github.microprograms.micro_oss_core.model.TableDefinition;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_mysql.utils.MysqlUtils;
+import com.github.microprograms.micro_refs.model.Ref;
+import com.github.microprograms.micro_refs.utils.MicroRefsUtils;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -75,11 +79,12 @@ public class ModelSdk {
 		 * @param modelDefinition
 		 * @param excludeModelNames
 		 * @param tablePrefix
+		 * @param javaPackageName
 		 * @return
 		 * @throws Exception
 		 */
 		public static String buildInitSql(PlainModelDefinition modelDefinition, List<String> excludeModelNames,
-				String tablePrefix) throws Exception {
+				String tablePrefix, String javaPackageName) throws Exception {
 			StringBuffer sb = new StringBuffer();
 			for (PlainEntityDefinition x : modelDefinition.getEntityDefinitions()) {
 				if (excludeModelNames.contains(x.getName())) {
@@ -91,7 +96,23 @@ public class ModelSdk {
 				sb.append(MysqlUtils.buildSql(new CreateTableCommand(_buildTableDefinition(x, tablePrefix))))
 						.append("\n\n");
 			}
+			for (PlainEntityRefDefinition x : modelDefinition.getEntityRefDefinitions()) {
+				Class<?> sourceClz = _getEntityClass(x.getSource().getName(), javaPackageName);
+				Class<?> targetClz = _getEntityClass(x.getTarget().getName(), javaPackageName);
+				sb.append(String.format("# Dump of ref table（%s and %s）\n", sourceClz.getSimpleName(),
+						targetClz.getSimpleName()));
+				sb.append("# ------------------------------------------------------------\n\n");
+				sb.append(MysqlUtils.buildSql(MicroRefsUtils.buildDropTableCommand(sourceClz, targetClz, tablePrefix)))
+						.append("\n\n");
+				sb.append(
+						MysqlUtils.buildSql(MicroRefsUtils.buildCreateTableCommand(sourceClz, targetClz, tablePrefix)))
+						.append("\n\n");
+			}
 			return sb.toString();
+		}
+
+		private static Class<?> _getEntityClass(String name, String javaPackageName) throws ClassNotFoundException {
+			return Class.forName(javaPackageName + name);
 		}
 
 		private static TableDefinition _buildTableDefinition(PlainEntityDefinition entityDefinition,

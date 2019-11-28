@@ -11,6 +11,7 @@ public class PlainModelDefinition implements Serializable {
 	private String description;
 	private String version;
 	private List<PlainEntityDefinition> entityDefinitions;
+	private List<PlainEntityRefDefinition> entityRefDefinitions;
 	private Map<String, Object> ext;
 
 	public String getComment() {
@@ -43,6 +44,14 @@ public class PlainModelDefinition implements Serializable {
 
 	public void setEntityDefinitions(List<PlainEntityDefinition> entityDefinitions) {
 		this.entityDefinitions = entityDefinitions;
+	}
+
+	public List<PlainEntityRefDefinition> getEntityRefDefinitions() {
+		return entityRefDefinitions;
+	}
+
+	public void setEntityRefDefinitions(List<PlainEntityRefDefinition> entityRefDefinitions) {
+		this.entityRefDefinitions = entityRefDefinitions;
 	}
 
 	public Map<String, Object> getExt() {

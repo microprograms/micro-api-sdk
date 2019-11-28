@@ -14,6 +14,7 @@ public class PlainFieldDefinition implements Serializable {
 	private boolean required;
 	private int primaryKey;
 	private Object defaultValue;
+	private String mock;
 	private Map<String, Object> ext;
 
 	public String getName() {
@@ -78,6 +79,14 @@ public class PlainFieldDefinition implements Serializable {
 
 	public void setDefaultValue(Object defaultValue) {
 		this.defaultValue = defaultValue;
+	}
+
+	public String getMock() {
+		return mock;
+	}
+
+	public void setMock(String mock) {
+		this.mock = mock;
 	}
 
 	public Map<String, Object> getExt() {
