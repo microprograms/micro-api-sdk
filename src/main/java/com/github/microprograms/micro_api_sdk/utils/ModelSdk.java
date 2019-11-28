@@ -111,7 +111,7 @@ public class ModelSdk {
 		}
 
 		private static Class<?> _getEntityClass(String name, String javaPackageName) throws ClassNotFoundException {
-			return Class.forName(javaPackageName + name);
+			return Class.forName(String.format("%s.%s", javaPackageName, name));
 		}
 
 		private static TableDefinition _buildTableDefinition(PlainEntityDefinition entityDefinition,
