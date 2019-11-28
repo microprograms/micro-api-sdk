@@ -4,7 +4,7 @@
 
 	<groupId>com.github.microprograms</groupId>
 	<artifactId>micro-api-sdk</artifactId>
-	<version>9.1.0</version>
+	<version>9.2.0</version>
 	<packaging>jar</packaging>
 
 	<name>micro-api-sdk</name>
@@ -73,6 +73,12 @@
 			<groupId>com.github.microprograms</groupId>
 			<artifactId>micro-oss-mysql</artifactId>
 			<version>5.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>6.0.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.github.microprograms</groupId>

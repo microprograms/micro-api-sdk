@@ -11,14 +11,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.alibaba.fastjson.JSON;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -34,6 +30,9 @@ import com.github.microprograms.micro_oss_core.model.TableDefinition;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
 import com.github.microprograms.micro_oss_mysql.utils.MysqlUtils;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 建模（表结构定义）

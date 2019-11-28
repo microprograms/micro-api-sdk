@@ -17,7 +17,7 @@ import com.github.microprograms.micro_api_sdk.model.ApiDefinition;
 import com.github.microprograms.micro_api_sdk.model.ModuleDefinition;
 import com.github.microprograms.osgi_module_activator.ModuleActivator;
 
-public class OsgiModule {
+public class OsgiModuleSdk {
     private static final Charset encoding = Charset.forName("utf8");
 
     /**
@@ -40,7 +40,6 @@ public class OsgiModule {
                 javaFile.getParentFile().mkdirs();
                 javaFile.createNewFile();
                 cu = new CompilationUnit(javaPackageName);
-                cu.addImport(apiJavaPackageName, false, true);
                 activatorClass = cu.addClass(activator_class_name, Modifier.PUBLIC)
                         .addExtendedType(ModuleActivator.class);
             }
