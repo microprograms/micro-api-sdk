@@ -40,6 +40,7 @@ public class OsgiModuleSdk {
                 javaFile.getParentFile().mkdirs();
                 javaFile.createNewFile();
                 cu = new CompilationUnit(javaPackageName);
+                cu.addImport(apiJavaPackageName, false, true);
                 activatorClass = cu.addClass(activator_class_name, Modifier.PUBLIC)
                         .addExtendedType(ModuleActivator.class);
             }
