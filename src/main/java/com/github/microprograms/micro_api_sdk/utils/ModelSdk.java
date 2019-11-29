@@ -266,13 +266,14 @@ public class ModelSdk {
 
 		private static void fillEnumField(ClassOrInterfaceDeclaration classDeclaration,
 				PlainFieldDefinition fieldDefinition) {
-			EnumDeclaration enumDeclaration = new EnumDeclaration(EnumSet.of(Modifier.PUBLIC),
-					String.format(enum_field_class_name_format, StringUtils.capitalize(fieldDefinition.getName())));
-			classDeclaration.addMember(enumDeclaration);
 			EnumFieldDefinition enumFieldDefinition = parseEnumField(fieldDefinition);
 			if (null == enumFieldDefinition) {
 				return;
 			}
+
+			EnumDeclaration enumDeclaration = new EnumDeclaration(EnumSet.of(Modifier.PUBLIC),
+					String.format(enum_field_class_name_format, StringUtils.capitalize(fieldDefinition.getName())));
+			classDeclaration.addMember(enumDeclaration);
 			for (Pair x : enumFieldDefinition.getPairs()) {
 				enumDeclaration.addEnumConstant(x.getName()).setJavadocComment(x.getComment());
 			}

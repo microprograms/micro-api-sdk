@@ -13,9 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -64,8 +61,8 @@ import com.github.microprograms.micro_api_sdk.model.ServerAddressDefinition;
 import com.github.microprograms.micro_api_sdk.model.ShowdocDefinition;
 import com.jcabi.http.request.JdkRequest;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.matchprocessor.ClassAnnotationMatchProcessor;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class ApiSdk {
 	private static final Charset encoding = Charset.forName("utf8");
@@ -488,39 +485,6 @@ public class ApiSdk {
 										ReserveResponseCodeEnum.api_not_implemented_exception.name())))));
 				executeMethod.setBody(block);
 			}
-		}
-
-		/**
-		 * 删除无用的API类
-		 * 
-		 * @param moduleDefinition
-		 * @param srcFolder
-		 * @param javaPackageName
-		 * @throws IOException
-		 */
-		public static void deleteUnusedApis(ModuleDefinition moduleDefinition, String srcFolder, String javaPackageName)
-				throws IOException {
-			new FastClasspathScanner(javaPackageName) //
-					.matchClassesWithAnnotation(MicroApi.class, new ClassAnnotationMatchProcessor() {
-						@Override
-						public void processMatch(Class<?> apiClass) {
-							String apiClassName = apiClass.getSimpleName();
-							if (_getApiDefinitionByJavaClassName(apiClassName, moduleDefinition) != null) {
-								return;
-							}
-							JavaParserUtils.buildJavaSourceFile(srcFolder, javaPackageName, apiClassName).delete();
-						}
-					}).scan();
-		}
-
-		private static ApiDefinition _getApiDefinitionByJavaClassName(String javaClassName,
-				ModuleDefinition moduleDefinition) {
-			for (ApiDefinition x : moduleDefinition.getApiDefinitions()) {
-				if (javaClassName.equals(x.getName())) {
-					return x;
-				}
-			}
-			return null;
 		}
 
 		/**
