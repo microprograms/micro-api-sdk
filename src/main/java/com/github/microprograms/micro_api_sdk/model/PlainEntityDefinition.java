@@ -67,15 +67,23 @@ public class PlainEntityDefinition implements Serializable {
 
 	public static class PlainEntityMockConfig implements Serializable {
 		private static final long serialVersionUID = 1L;
+		/**
+		 * 最小实例个数
+		 */
+		public final static int default_minInstanceCount = 1;
+		/**
+		 * 最大实例个数
+		 */
+		public final static int default_maxInstanceCount = 100;
 
 		/**
 		 * 最少实例个数
 		 */
-		private int minInstanceCount;
+		private int minInstanceCount = default_minInstanceCount;
 		/**
 		 * 最大实例个数
 		 */
-		private int maxInstanceCount;
+		private int maxInstanceCount = default_maxInstanceCount;
 
 		public int getMinInstanceCount() {
 			return minInstanceCount;

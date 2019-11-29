@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -13,8 +14,6 @@ import com.github.microprograms.micro_api_sdk.model.PlainEntityRefDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainEntityRefDefinition.PlainEntityRefItem.PlainEntityRefMockConfig;
 import com.github.microprograms.micro_api_sdk.model.PlainFieldDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainModelDefinition;
-import com.github.microprograms.micro_oss_core.model.Entity;
-import com.github.microprograms.micro_oss_core.model.Field;
 import com.github.microprograms.micro_refs.model.Ref;
 import com.github.microprograms.micro_refs.model.RefBuilder;
 
@@ -22,8 +21,25 @@ import org.apache.commons.lang3.StringUtils;
 
 public class MockUtils {
 
-    private static int random(int min, int max) {
+    private final static String fieldName_id = "id";
+    private final static String fieldName_createAt = "createAt";
+
+    private static int _random(int min, int max) {
         return min + new Random().nextInt(max - min + 1);
+    }
+
+    private static int _random(PlainEntityMockConfig mockConfig) {
+        if (null == mockConfig) {
+            return _random(new PlainEntityMockConfig());
+        }
+        return _random(mockConfig.getMinInstanceCount(), mockConfig.getMaxInstanceCount());
+    }
+
+    private static int _random(PlainEntityRefMockConfig refConfig) {
+        if (null == refConfig) {
+            return _random(new PlainEntityRefMockConfig());
+        }
+        return _random(refConfig.getMinRepeatPerInstance(), refConfig.getMaxRepeatPerInstance());
     }
 
     public static PlainModelMock mock(PlainModelDefinition modelDefinition, List<String> excludeModelNames,
@@ -46,7 +62,7 @@ public class MockUtils {
         Class<? extends Object> entityClass = ModelSdk.getEntityClass(entityDefinition.getName(), javaPackageName);
         PlainEntityMock entityMock = new PlainEntityMock(entityClass);
         PlainEntityMockConfig mockConfig = entityDefinition.getMock();
-        int instanceCount = random(mockConfig.getMinInstanceCount(), mockConfig.getMaxInstanceCount());
+        int instanceCount = _random(mockConfig);
         for (int i = 1; i <= instanceCount; i++) {
             JSONObject json = new JSONObject();
             for (PlainFieldDefinition x : entityDefinition.getFieldDefinitions()) {
@@ -57,29 +73,43 @@ public class MockUtils {
         return entityMock;
     }
 
-    private static String mock(PlainFieldDefinition fieldDefinition, int i) {
-        String mock = fieldDefinition.getMock();
-        if (null == mock) {
-            return null;
+    private static Object mock(PlainFieldDefinition fieldDefinition, int i) {
+        if (fieldName_id.equals(fieldDefinition.getName())) {
+            return UUID.randomUUID().toString();
+        } else if (fieldName_createAt.equals(fieldDefinition.getName())) {
+            return System.currentTimeMillis();
         }
 
-        if (StringUtils.isNotBlank(fieldDefinition.getName())) {
-            mock = mock.replaceAll("\\$name", fieldDefinition.getName());
-        }
-        if (StringUtils.isNotBlank(fieldDefinition.getComment())) {
-            mock = mock.replaceAll("\\$comment", fieldDefinition.getComment());
-        }
-        if (StringUtils.isNotBlank(fieldDefinition.getDescription())) {
-            mock = mock.replaceAll("\\$description", fieldDefinition.getDescription());
-        }
-        if (fieldDefinition.getExample() != null) {
-            mock = mock.replaceAll("\\$example", fieldDefinition.getExample().toString());
-        }
-        if (fieldDefinition.getDefaultValue() != null) {
-            mock = mock.replaceAll("\\$defaultValue", fieldDefinition.getDefaultValue().toString());
+        if (Integer.class.getSimpleName().equals(fieldDefinition.getJavaType())) {
+            return new Random().nextInt(Integer.MAX_VALUE);
+        } else if (Long.class.getSimpleName().equals(fieldDefinition.getJavaType())) {
+            return new Random().nextLong();
+        } else if (String.class.getSimpleName().equals(fieldDefinition.getJavaType())) {
+            String mock = fieldDefinition.getMock();
+            if (null == mock) {
+                String label = StringUtils.isNotBlank(fieldDefinition.getComment()) ? fieldDefinition.getComment()
+                        : fieldDefinition.getName();
+                return String.format("%s%d", label, i);
+            }
+            if (StringUtils.isNotBlank(fieldDefinition.getName())) {
+                mock = mock.replaceAll("\\$name", fieldDefinition.getName());
+            }
+            if (StringUtils.isNotBlank(fieldDefinition.getComment())) {
+                mock = mock.replaceAll("\\$comment", fieldDefinition.getComment());
+            }
+            if (StringUtils.isNotBlank(fieldDefinition.getDescription())) {
+                mock = mock.replaceAll("\\$description", fieldDefinition.getDescription());
+            }
+            if (fieldDefinition.getExample() != null) {
+                mock = mock.replaceAll("\\$example", fieldDefinition.getExample().toString());
+            }
+            if (fieldDefinition.getDefaultValue() != null) {
+                mock = mock.replaceAll("\\$defaultValue", fieldDefinition.getDefaultValue().toString());
+            }
+            return mock.replaceAll("\\$i", String.valueOf(i));
         }
 
-        return mock.replaceAll("\\$i", String.valueOf(i));
+        return fieldDefinition.getMock();
     }
 
     private static PlainEntityRefMock mock(PlainEntityRefDefinition entityRefDefinition, String javaPackageName,
@@ -225,8 +255,7 @@ public class MockUtils {
         private static List<EntityInstance> _build(PlainEntityMock entity, PlainEntityRefMockConfig refConfig) {
             List<EntityInstance> entityInstances = new ArrayList<>();
             for (Object instance : entity.getInstances()) {
-                int repeatPerInstance = random(refConfig.getMinRepeatPerInstance(),
-                        refConfig.getMaxRepeatPerInstance());
+                int repeatPerInstance = _random(refConfig);
                 entityInstances.add(new EntityInstance(instance, repeatPerInstance));
             }
             return entityInstances;

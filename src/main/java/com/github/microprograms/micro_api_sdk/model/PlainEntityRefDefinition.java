@@ -55,11 +55,20 @@ public class PlainEntityRefDefinition implements Serializable {
 			/**
 			 * 每个实例最小重复次数
 			 */
-			private int minRepeatPerInstance;
+			public final static int default_minRepeatPerInstance = 0;
 			/**
 			 * 每个实例最大重复次数
 			 */
-			private int maxRepeatPerInstance;
+			public final static int default_maxRepeatPerInstance = 5;
+
+			/**
+			 * 每个实例最小重复次数
+			 */
+			private int minRepeatPerInstance = default_minRepeatPerInstance;
+			/**
+			 * 每个实例最大重复次数
+			 */
+			private int maxRepeatPerInstance = default_maxRepeatPerInstance;
 
 			public int getMinRepeatPerInstance() {
 				return minRepeatPerInstance;
