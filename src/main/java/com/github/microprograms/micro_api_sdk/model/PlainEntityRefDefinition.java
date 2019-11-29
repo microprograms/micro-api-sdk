@@ -5,33 +5,33 @@ import java.io.Serializable;
 public class PlainEntityRefDefinition implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private Entity source;
-	private Entity target;
+	private PlainEntityRefItem source;
+	private PlainEntityRefItem target;
 
-	public Entity getSource() {
+	public PlainEntityRefItem getSource() {
 		return source;
 	}
 
-	public void setSource(Entity source) {
+	public void setSource(PlainEntityRefItem source) {
 		this.source = source;
 	}
 
-	public Entity getTarget() {
+	public PlainEntityRefItem getTarget() {
 		return target;
 	}
 
-	public void setTarget(Entity target) {
+	public void setTarget(PlainEntityRefItem target) {
 		this.target = target;
 	}
 
-	public static class Entity implements Serializable {
+	public static class PlainEntityRefItem implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		/**
 		 * 唯一标识符
 		 */
 		private String name;
-		private Mock mock;
+		private PlainEntityRefMockConfig mock;
 
 		public String getName() {
 			return name;
@@ -41,15 +41,15 @@ public class PlainEntityRefDefinition implements Serializable {
 			this.name = name;
 		}
 
-		public Mock getMock() {
+		public PlainEntityRefMockConfig getMock() {
 			return mock;
 		}
 
-		public void setMock(Mock mock) {
+		public void setMock(PlainEntityRefMockConfig mock) {
 			this.mock = mock;
 		}
 
-		public static class Mock implements Serializable {
+		public static class PlainEntityRefMockConfig implements Serializable {
 			private static final long serialVersionUID = 1L;
 
 			/**

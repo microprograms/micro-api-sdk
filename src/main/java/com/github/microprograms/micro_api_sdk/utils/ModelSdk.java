@@ -25,12 +25,18 @@ import com.github.microprograms.micro_api_sdk.model.PlainEntityDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainEntityRefDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainFieldDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainModelDefinition;
+import com.github.microprograms.micro_api_sdk.utils.MockUtils.PlainEntityMock;
+import com.github.microprograms.micro_api_sdk.utils.MockUtils.PlainEntityRefMock;
+import com.github.microprograms.micro_api_sdk.utils.MockUtils.PlainModelMock;
 import com.github.microprograms.micro_oss_core.model.FieldDefinition;
 import com.github.microprograms.micro_oss_core.model.FieldDefinition.FieldTypeEnum;
 import com.github.microprograms.micro_oss_core.model.TableDefinition;
 import com.github.microprograms.micro_oss_core.model.ddl.CreateTableCommand;
 import com.github.microprograms.micro_oss_core.model.ddl.DropTableCommand;
+import com.github.microprograms.micro_oss_core.model.dml.update.InsertCommand;
+import com.github.microprograms.micro_oss_core.utils.MicroOssUtils;
 import com.github.microprograms.micro_oss_mysql.utils.MysqlUtils;
+import com.github.microprograms.micro_refs.model.Ref;
 import com.github.microprograms.micro_refs.utils.MicroRefsUtils;
 
 import org.apache.commons.io.FileUtils;
@@ -46,6 +52,12 @@ public class ModelSdk {
 	public static PlainModelDefinition build(String configFilePath) throws IOException {
 		String json = Fn.readFile(configFilePath, encoding);
 		return JSON.parseObject(json, PlainModelDefinition.class);
+	}
+
+	public static Class<? extends Object> getEntityClass(String name, String javaPackageName)
+			throws ClassNotFoundException {
+		ClassLoader currentThreadClassLoader = Thread.currentThread().getContextClassLoader();
+		return currentThreadClassLoader.loadClass(String.format("%s.%s", javaPackageName, name));
 	}
 
 	/**
@@ -67,8 +79,13 @@ public class ModelSdk {
 				String tablePrefix, String javaPackageName, File dir) throws Exception {
 			String data = new SimpleDateFormat("yyyyMMdd").format(new Date());
 			String ver = modelDefinition.getVersion().replaceFirst("^v", "");
-			String filename = String.format("init-v%s-%s.sql", ver, data);
-			String sql = buildInitSql(modelDefinition, excludeModelNames, tablePrefix, javaPackageName);
+			_writeToFile(String.format("init-v%s-%s.sql", ver, data),
+					buildInitSql(modelDefinition, excludeModelNames, tablePrefix, javaPackageName), dir);
+			_writeToFile(String.format("mock-v%s-%s.sql", ver, data),
+					buildMockSql(modelDefinition, excludeModelNames, tablePrefix, javaPackageName), dir);
+		}
+
+		private static void _writeToFile(String filename, String sql, File dir) throws IOException {
 			FileUtils.writeStringToFile(new File(dir, filename), sql, encoding);
 		}
 
@@ -91,51 +108,86 @@ public class ModelSdk {
 				}
 				sb.append(String.format("# Dump of table %s（%s）\n", x.getComment(), x.getName()));
 				sb.append("# ------------------------------------------------------------\n\n");
-				sb.append(MysqlUtils.buildSql(new DropTableCommand(_getTableName(x, tablePrefix)))).append("\n\n");
-				sb.append(MysqlUtils.buildSql(new CreateTableCommand(_buildTableDefinition(x, tablePrefix))))
-						.append("\n\n");
+
+				DropTableCommand dropTableCommand = new DropTableCommand(x.getName());
+				dropTableCommand.setTableName(
+						MicroOssUtils.getTableNameWithPrefix(dropTableCommand.getTableName(), tablePrefix));
+				sb.append(MysqlUtils.buildSql(dropTableCommand)).append("\n\n");
+
+				CreateTableCommand createTableCommand = new CreateTableCommand(_buildTableDefinition(x));
+				createTableCommand.getTableDefinition().setTableName(MicroOssUtils
+						.getTableNameWithPrefix(createTableCommand.getTableDefinition().getTableName(), tablePrefix));
+				sb.append(MysqlUtils.buildSql(createTableCommand)).append("\n\n");
 			}
+
 			for (PlainEntityRefDefinition x : modelDefinition.getEntityRefDefinitions()) {
-				Class<?> sourceClz = _getEntityClass(x.getSource().getName(), javaPackageName);
-				Class<?> targetClz = _getEntityClass(x.getTarget().getName(), javaPackageName);
+				Class<?> sourceClz = getEntityClass(x.getSource().getName(), javaPackageName);
+				Class<?> targetClz = getEntityClass(x.getTarget().getName(), javaPackageName);
 				sb.append(String.format("# Dump of ref table（%s and %s）\n", sourceClz.getSimpleName(),
 						targetClz.getSimpleName()));
 				sb.append("# ------------------------------------------------------------\n\n");
-				sb.append(MysqlUtils.buildSql(MicroRefsUtils.buildDropTableCommand(sourceClz, targetClz, tablePrefix)))
-						.append("\n\n");
-				sb.append(
-						MysqlUtils.buildSql(MicroRefsUtils.buildCreateTableCommand(sourceClz, targetClz, tablePrefix)))
-						.append("\n\n");
+
+				DropTableCommand dropTableCommand = MicroRefsUtils.buildDropTableCommand(sourceClz, targetClz);
+				dropTableCommand.setTableName(
+						MicroOssUtils.getTableNameWithPrefix(dropTableCommand.getTableName(), tablePrefix));
+				sb.append(MysqlUtils.buildSql(dropTableCommand)).append("\n\n");
+
+				CreateTableCommand createTableCommand = MicroRefsUtils.buildCreateTableCommand(sourceClz, targetClz);
+				createTableCommand.getTableDefinition().setTableName(MicroOssUtils
+						.getTableNameWithPrefix(createTableCommand.getTableDefinition().getTableName(), tablePrefix));
+				sb.append(MysqlUtils.buildSql(createTableCommand)).append("\n\n");
 			}
 			return sb.toString();
 		}
 
-		private static Class<?> _getEntityClass(String name, String javaPackageName) throws ClassNotFoundException {
-			ClassLoader currentThreadClassLoader = Thread.currentThread().getContextClassLoader();
-			return currentThreadClassLoader.loadClass(String.format("%s.%s", javaPackageName, name));
+		/**
+		 * 构建sql mock脚本
+		 * 
+		 * @param modelDefinition
+		 * @param excludeModelNames
+		 * @param tablePrefix
+		 * @param javaPackageName
+		 * @return
+		 * @throws Exception
+		 */
+		public static String buildMockSql(PlainModelDefinition modelDefinition, List<String> excludeModelNames,
+				String tablePrefix, String javaPackageName) throws Exception {
+			StringBuffer sb = new StringBuffer();
+			PlainModelMock modelMock = MockUtils.mock(modelDefinition, excludeModelNames, javaPackageName);
+			for (PlainEntityMock x : modelMock.getEntityMocks()) {
+				sb.append(String.format("# Mock of table（%s）\n", MicroOssUtils.getTableName(x.getClass())));
+				sb.append("# ------------------------------------------------------------\n\n");
+
+				for (Object instance : x.getInstances()) {
+					InsertCommand insertCommand = new InsertCommand(MicroOssUtils.buildEntity(instance));
+					insertCommand.getEntity().setTableName(MicroOssUtils
+							.getTableNameWithPrefix(insertCommand.getEntity().getTableName(), tablePrefix));
+					sb.append(MysqlUtils.buildSql(insertCommand)).append("\n\n");
+				}
+			}
+
+			for (PlainEntityRefMock x : modelMock.getEntityRefMocks()) {
+				sb.append(String.format("# Mock of ref table（%s and %s）\n", x.getSourceClz().getSimpleName(),
+						x.getTargetClz().getSimpleName()));
+				sb.append("# ------------------------------------------------------------\n\n");
+				for (Ref ref : x.getRefs()) {
+					InsertCommand insertCommand = MicroRefsUtils.buildInsertCommand(ref);
+					insertCommand.getEntity().setTableName(MicroOssUtils
+							.getTableNameWithPrefix(insertCommand.getEntity().getTableName(), tablePrefix));
+					sb.append(MysqlUtils.buildSql(insertCommand)).append("\n\n");
+				}
+			}
+			return sb.toString();
 		}
 
-		private static TableDefinition _buildTableDefinition(PlainEntityDefinition entityDefinition,
-				String tablePrefix) {
+		private static TableDefinition _buildTableDefinition(PlainEntityDefinition entityDefinition) {
 			List<FieldDefinition> fields = new ArrayList<>();
 			for (PlainFieldDefinition x : entityDefinition.getFieldDefinitions()) {
-				String fieldName = _getFieldName(x);
+				String fieldName = x.getName();
 				fields.add(new FieldDefinition(fieldName, x.getComment(), FieldTypeEnum.parse(x.getJavaType()),
 						x.getDefaultValue(), x.getPrimaryKey()));
 			}
-			String tableName = _getTableName(entityDefinition, tablePrefix);
-			return new TableDefinition(tableName, entityDefinition.getComment(), fields);
-		}
-
-		private static String _getTableName(PlainEntityDefinition entityDefinition, String tablePrefix) {
-			if (StringUtils.isBlank(tablePrefix)) {
-				return entityDefinition.getName();
-			}
-			return tablePrefix + entityDefinition.getName();
-		}
-
-		private static String _getFieldName(PlainFieldDefinition fieldDefinition) {
-			return fieldDefinition.getName();
+			return new TableDefinition(entityDefinition.getName(), entityDefinition.getComment(), fields);
 		}
 	}
 
