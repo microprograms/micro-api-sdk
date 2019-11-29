@@ -28,6 +28,7 @@ import com.github.microprograms.micro_api_sdk.model.PlainModelDefinition;
 import com.github.microprograms.micro_api_sdk.utils.MockUtils.PlainEntityMock;
 import com.github.microprograms.micro_api_sdk.utils.MockUtils.PlainEntityRefMock;
 import com.github.microprograms.micro_api_sdk.utils.MockUtils.PlainModelMock;
+import com.github.microprograms.micro_api_sdk.utils.ModelSdk.UpdateJavaSourceFile.EnumFieldDefinition.Pair;
 import com.github.microprograms.micro_oss_core.model.FieldDefinition;
 import com.github.microprograms.micro_oss_core.model.FieldDefinition.FieldTypeEnum;
 import com.github.microprograms.micro_oss_core.model.TableDefinition;
@@ -123,7 +124,7 @@ public class ModelSdk {
 			for (PlainEntityRefDefinition x : modelDefinition.getEntityRefDefinitions()) {
 				Class<?> sourceClz = getEntityClass(x.getSource().getName(), javaPackageName);
 				Class<?> targetClz = getEntityClass(x.getTarget().getName(), javaPackageName);
-				sb.append(String.format("# Dump of ref table（%s and %s）\n", sourceClz.getSimpleName(),
+				sb.append(String.format("# Dump of ref table %s and %s\n", sourceClz.getSimpleName(),
 						targetClz.getSimpleName()));
 				sb.append("# ------------------------------------------------------------\n\n");
 
@@ -155,7 +156,7 @@ public class ModelSdk {
 			StringBuffer sb = new StringBuffer();
 			PlainModelMock modelMock = MockUtils.mock(modelDefinition, excludeModelNames, javaPackageName);
 			for (PlainEntityMock x : modelMock.getEntityMocks()) {
-				sb.append(String.format("# Mock of table（%s）\n", MicroOssUtils.getTableName(x.getClass())));
+				sb.append(String.format("# Mock of table %s\n", x.getClz().getSimpleName()));
 				sb.append("# ------------------------------------------------------------\n\n");
 
 				for (Object instance : x.getInstances()) {
@@ -167,7 +168,7 @@ public class ModelSdk {
 			}
 
 			for (PlainEntityRefMock x : modelMock.getEntityRefMocks()) {
-				sb.append(String.format("# Mock of ref table（%s and %s）\n", x.getSourceClz().getSimpleName(),
+				sb.append(String.format("# Mock of ref table %s and %s\n", x.getSourceClz().getSimpleName(),
 						x.getTargetClz().getSimpleName()));
 				sb.append("# ------------------------------------------------------------\n\n");
 				for (Ref ref : x.getRefs()) {
@@ -265,23 +266,76 @@ public class ModelSdk {
 
 		private static void fillEnumField(ClassOrInterfaceDeclaration classDeclaration,
 				PlainFieldDefinition fieldDefinition) {
-			Pattern pattern = Pattern.compile("[(（]([A-Za-z0-9_]+[:：][^,，:：)）]+[,，]?)+[)）]");
-			Matcher matcher = pattern.matcher(fieldDefinition.getComment());
-			if (!matcher.find()) {
-				return;
-			}
-			String enumDefinition = matcher.group();
-			String[] pairs = enumDefinition.substring(1, enumDefinition.length() - 1).split("[,，]");
-
 			EnumDeclaration enumDeclaration = new EnumDeclaration(EnumSet.of(Modifier.PUBLIC),
 					String.format(enum_field_class_name_format, StringUtils.capitalize(fieldDefinition.getName())));
 			classDeclaration.addMember(enumDeclaration);
+			EnumFieldDefinition enumFieldDefinition = parseEnumField(fieldDefinition);
+			if (null == enumFieldDefinition) {
+				return;
+			}
+			for (Pair x : enumFieldDefinition.getPairs()) {
+				enumDeclaration.addEnumConstant(x.getName()).setJavadocComment(x.getComment());
+			}
+		}
+
+		public static EnumFieldDefinition parseEnumField(PlainFieldDefinition fieldDefinition) {
+			return _parseEnumField(fieldDefinition.getComment());
+		}
+
+		private static EnumFieldDefinition _parseEnumField(String fieldComment) {
+			Pattern pattern = Pattern.compile("[(（]([A-Za-z0-9_]+[:：][^,，:：)）]+[,，]?)+[)）]");
+			Matcher matcher = pattern.matcher(fieldComment);
+			if (!matcher.find()) {
+				return null;
+			}
+			String enumDefinition = matcher.group();
+			String[] pairs = enumDefinition.substring(1, enumDefinition.length() - 1).split("[,，]");
+			EnumFieldDefinition enumFieldDefinition = new EnumFieldDefinition();
 			for (String pair : pairs) {
 				if (StringUtils.isBlank(pair)) {
-					return;
+					continue;
 				}
 				String[] kv = pair.split("[:：]");
-				enumDeclaration.addEnumConstant(kv[0]).setJavadocComment(kv[1]);
+				enumFieldDefinition.getPairs().add(new Pair(kv[0], kv[1]));
+			}
+			return enumFieldDefinition;
+		}
+
+		public static class EnumFieldDefinition {
+			private List<Pair> pairs = new ArrayList<>();
+
+			public List<Pair> getPairs() {
+				return pairs;
+			}
+
+			public void setPairs(List<Pair> pairs) {
+				this.pairs = pairs;
+			}
+
+			public static class Pair {
+				private String name;
+				private String comment;
+
+				public Pair(String name, String comment) {
+					this.name = name;
+					this.comment = comment;
+				}
+
+				public String getName() {
+					return name;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public String getComment() {
+					return comment;
+				}
+
+				public void setComment(String comment) {
+					this.comment = comment;
+				}
 			}
 		}
 	}

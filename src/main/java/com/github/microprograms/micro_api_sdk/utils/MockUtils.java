@@ -1,5 +1,6 @@
 package com.github.microprograms.micro_api_sdk.utils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +15,7 @@ import com.github.microprograms.micro_api_sdk.model.PlainEntityRefDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainEntityRefDefinition.PlainEntityRefItem.PlainEntityRefMockConfig;
 import com.github.microprograms.micro_api_sdk.model.PlainFieldDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainModelDefinition;
+import com.github.microprograms.micro_api_sdk.utils.ModelSdk.UpdateJavaSourceFile.EnumFieldDefinition;
 import com.github.microprograms.micro_refs.model.Ref;
 import com.github.microprograms.micro_refs.model.RefBuilder;
 
@@ -21,8 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class MockUtils {
 
-    private final static String fieldName_id = "id";
-    private final static String fieldName_createAt = "createAt";
+    private static String fieldName_id = "id";
+    private static String fieldName_createdAt = "createdAt";
 
     private static int _random(int min, int max) {
         return min + new Random().nextInt(max - min + 1);
@@ -75,22 +77,39 @@ public class MockUtils {
 
     private static Object mock(PlainFieldDefinition fieldDefinition, int i) {
         if (fieldName_id.equals(fieldDefinition.getName())) {
+            // ID字段
             return UUID.randomUUID().toString();
-        } else if (fieldName_createAt.equals(fieldDefinition.getName())) {
+        }
+
+        if (fieldName_createdAt.equals(fieldDefinition.getName())) {
+            // 创建时间字段
             return System.currentTimeMillis();
         }
 
-        if (Integer.class.getSimpleName().equals(fieldDefinition.getJavaType())) {
+        if ((Integer.class.getSimpleName().equals(fieldDefinition.getJavaType())
+                || Long.class.getSimpleName().equals(fieldDefinition.getJavaType()))
+                && null == fieldDefinition.getMock()) {
+            // int字段或long字段，且null
             return new Random().nextInt(Integer.MAX_VALUE);
-        } else if (Long.class.getSimpleName().equals(fieldDefinition.getJavaType())) {
-            return new Random().nextLong();
-        } else if (String.class.getSimpleName().equals(fieldDefinition.getJavaType())) {
+        }
+
+        if (String.class.getSimpleName().equals(fieldDefinition.getJavaType())) {
+            // string字段
+            EnumFieldDefinition enumFieldDefinition = ModelSdk.UpdateJavaSourceFile.parseEnumField(fieldDefinition);
+            if (enumFieldDefinition != null && !enumFieldDefinition.getPairs().isEmpty()) {
+                // 枚举
+                return enumFieldDefinition.getPairs().get(new Random().nextInt(enumFieldDefinition.getPairs().size()))
+                        .getName();
+            }
+
             String mock = fieldDefinition.getMock();
             if (null == mock) {
+                // null
                 String label = StringUtils.isNotBlank(fieldDefinition.getComment()) ? fieldDefinition.getComment()
                         : fieldDefinition.getName();
                 return String.format("%s%d", label, i);
             }
+
             if (StringUtils.isNotBlank(fieldDefinition.getName())) {
                 mock = mock.replaceAll("\\$name", fieldDefinition.getName());
             }
@@ -113,8 +132,8 @@ public class MockUtils {
     }
 
     private static PlainEntityRefMock mock(PlainEntityRefDefinition entityRefDefinition, String javaPackageName,
-            PlainModelMock modelMock) throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException,
-            NoSuchFieldException, SecurityException {
+            PlainModelMock modelMock) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException, NoSuchMethodException, SecurityException {
         Class<? extends Object> sourceClz = ModelSdk.getEntityClass(entityRefDefinition.getSource().getName(),
                 javaPackageName);
         Class<? extends Object> targetClz = ModelSdk.getEntityClass(entityRefDefinition.getTarget().getName(),
@@ -269,15 +288,15 @@ public class MockUtils {
             this.targetEntityInstances = targetEntityInstances;
         }
 
-        public PlainEntityRefMock mock()
-                throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
+        public PlainEntityRefMock mock() throws IllegalAccessException, IllegalArgumentException,
+                InvocationTargetException, NoSuchMethodException, SecurityException {
             PlainEntityRefMock refMock = new PlainEntityRefMock(sourceClz, targetClz);
             Collections.shuffle(sourceEntityInstances);
             Collections.shuffle(targetEntityInstances);
             for (EntityInstance source : sourceEntityInstances) {
                 String sourceId = _getId(source.getInstance());
                 for (int i = 0; i < source.getRepeat(); i++) {
-                    Object target = _pop(targetEntityInstances);
+                    Object target = _pop(targetEntityInstances, i);
                     if (null == target) {
                         break;
                     }
@@ -288,20 +307,20 @@ public class MockUtils {
             return refMock;
         }
 
-        private static String _getId(Object instance)
-                throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
-            return (String) instance.getClass().getField("id").get(instance);
+        private static String _getId(Object instance) throws IllegalAccessException, IllegalArgumentException,
+                InvocationTargetException, NoSuchMethodException, SecurityException {
+            return (String) instance.getClass().getDeclaredMethod("getId").invoke(instance);
         }
 
-        private static Object _pop(List<EntityInstance> entityInstances) {
-            if (entityInstances.isEmpty()) {
+        private static Object _pop(List<EntityInstance> entityInstances, int i) {
+            if (entityInstances.isEmpty() || i > entityInstances.size() - 1) {
                 return null;
             }
 
-            EntityInstance entityInstance = entityInstances.get(0);
+            EntityInstance entityInstance = entityInstances.get(i);
             if (entityInstance.getRepeat() <= 0) {
                 entityInstances.remove(entityInstance);
-                return _pop(entityInstances);
+                return _pop(entityInstances, i);
             }
 
             entityInstance.setRepeat(entityInstance.getRepeat() - 1);
