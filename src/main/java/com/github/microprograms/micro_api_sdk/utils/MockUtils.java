@@ -119,7 +119,10 @@ public class MockUtils {
             if (StringUtils.isNotBlank(fieldDefinition.getDescription())) {
                 mock = mock.replaceAll("\\$description", fieldDefinition.getDescription());
             }
-            if (fieldDefinition.getExample() != null) {
+            List<Object> examples = fieldDefinition.getExamples();
+            if (examples != null && !examples.isEmpty()) {
+                mock = mock.replaceAll("\\$example", examples.get(new Random().nextInt(examples.size())).toString());
+            } else if (fieldDefinition.getExample() != null) {
                 mock = mock.replaceAll("\\$example", fieldDefinition.getExample().toString());
             }
             if (fieldDefinition.getDefaultValue() != null) {

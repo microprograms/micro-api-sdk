@@ -1,6 +1,7 @@
 package com.github.microprograms.micro_api_sdk.model;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 public class PlainFieldDefinition implements Serializable {
@@ -10,6 +11,7 @@ public class PlainFieldDefinition implements Serializable {
 	private String comment;
 	private String description;
 	private Object example;
+	private List<Object> examples;
 	private String javaType;
 	private boolean required;
 	private int primaryKey;
@@ -47,6 +49,14 @@ public class PlainFieldDefinition implements Serializable {
 
 	public void setExample(Object example) {
 		this.example = example;
+	}
+
+	public List<Object> getExamples() {
+		return examples;
+	}
+
+	public void setExamples(List<Object> examples) {
+		this.examples = examples;
 	}
 
 	public String getJavaType() {
