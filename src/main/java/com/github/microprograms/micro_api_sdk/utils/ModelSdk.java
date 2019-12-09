@@ -197,19 +197,30 @@ public class ModelSdk {
 	 */
 	public static class UpdateJavaSourceFile {
 
+		public static void updateAll(PlainModelDefinition modelDefinition, String srcFolder, String javaPackageName)
+				throws Exception {
+			updateAll(modelDefinition, srcFolder, javaPackageName, null);
+		}
+
 		/**
 		 * 覆盖更新全部Model实体类
 		 * 
 		 * @param modelDefinition
 		 * @param srcFolder
 		 * @param javaPackageName
+		 * @param javaImports
 		 * @throws Exception
 		 */
-		public static void updateAll(PlainModelDefinition modelDefinition, String srcFolder, String javaPackageName)
-				throws Exception {
+		public static void updateAll(PlainModelDefinition modelDefinition, String srcFolder, String javaPackageName,
+				List<String> javaImports) throws Exception {
 			for (PlainEntityDefinition x : modelDefinition.getEntityDefinitions()) {
-				update(x, srcFolder, javaPackageName);
+				update(x, srcFolder, javaPackageName, javaImports);
 			}
+		}
+
+		public static void update(PlainEntityDefinition entityDefinition, String srcFolder, String javaPackageName)
+				throws IOException {
+			update(entityDefinition, srcFolder, javaPackageName, null);
 		}
 
 		/**
@@ -218,10 +229,11 @@ public class ModelSdk {
 		 * @param entityDefinition
 		 * @param srcFolder
 		 * @param javaPackageName
+		 * @param javaImports
 		 * @throws IOException
 		 */
-		public static void update(PlainEntityDefinition entityDefinition, String srcFolder, String javaPackageName)
-				throws IOException {
+		public static void update(PlainEntityDefinition entityDefinition, String srcFolder, String javaPackageName,
+				List<String> javaImports) throws IOException {
 			String entityJavaClassName = entityDefinition.getName();
 			File javaFile = JavaParserUtils.buildJavaSourceFile(srcFolder, javaPackageName, entityJavaClassName);
 			CompilationUnit cu = null;
@@ -240,6 +252,11 @@ public class ModelSdk {
 						Modifier.PUBLIC);
 				modelClassDeclaration.setComment(new JavadocComment("\n * " + entityDefinition.getComment() + "\n"));
 				fillFields(modelClassDeclaration, entityDefinition);
+			}
+			if (javaImports != null) {
+				for (String javaImport : javaImports) {
+					cu.addImport(javaImport);
+				}
 			}
 			JavaParserUtils.write(cu, javaFile, encoding);
 		}

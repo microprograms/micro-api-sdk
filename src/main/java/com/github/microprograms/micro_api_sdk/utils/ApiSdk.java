@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -710,7 +711,8 @@ public class ApiSdk {
 		public static void updateAllInnerModels(ModuleDefinition moduleDefinition, String srcFolder,
 				String javaPackageName) throws IOException {
 			for (PlainEntityDefinition x : moduleDefinition.getModelDefinitions()) {
-				ModelSdk.UpdateJavaSourceFile.update(x, srcFolder, javaPackageName);
+				ModelSdk.UpdateJavaSourceFile.update(x, srcFolder, javaPackageName,
+						Arrays.asList(List.class.getName()));
 			}
 		}
 	}
