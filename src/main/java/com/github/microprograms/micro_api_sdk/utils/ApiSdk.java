@@ -147,9 +147,14 @@ public class ApiSdk {
 		public static String buildMarkdownForHomePage(ModuleDefinition moduleDefinition) {
 			StringBuffer sb = new StringBuffer();
 			sb.append("# ").append(moduleDefinition.getComment()).append("\n\n");
-			if (StringUtils.isNotBlank(moduleDefinition.getDescription())) {
+			if (moduleDefinition.getDescriptions() != null && !moduleDefinition.getDescriptions().isEmpty()) {
 				sb.append("**描述：**").append("\n\n");
-				sb.append("- ").append(moduleDefinition.getDescription()).append("\n\n");
+				for (String x : moduleDefinition.getDescriptions()) {
+					sb.append("- ").append(x).append("\n\n");
+				}
+			} else if (StringUtils.isNotBlank(moduleDefinition.getDescription())) {
+				sb.append("**描述：**").append("\n\n");
+				sb.append(moduleDefinition.getDescription()).append("\n\n");
 			}
 			sb.append("**Version**").append("\n\n");
 			sb.append(String.format("`%s %s`", moduleDefinition.getVersion(), _getTime())).append("\n\n");

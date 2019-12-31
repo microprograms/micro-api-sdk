@@ -8,6 +8,7 @@ public class ModuleDefinition implements Serializable {
 
 	private String comment;
 	private String description;
+	private List<String> descriptions;
 	private String version;
 	/**
 	 * 唯一标识符
@@ -35,6 +36,14 @@ public class ModuleDefinition implements Serializable {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public List<String> getDescriptions() {
+		return descriptions;
+	}
+
+	public void setDescriptions(List<String> descriptions) {
+		this.descriptions = descriptions;
 	}
 
 	public String getVersion() {
