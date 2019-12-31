@@ -3,11 +3,20 @@ package com.github.microprograms.micro_api_sdk.model;
 import java.io.Serializable;
 
 public class ServerAddressDefinition implements Serializable {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-    private String host;
-    private int port;
+    private String scheme = "http";
+    private String host = "localhost";
+    private Integer port;
     private String url;
+
+    public String getScheme() {
+        return scheme;
+    }
+
+    public void setScheme(String scheme) {
+        this.scheme = scheme;
+    }
 
     public String getHost() {
         return host;
@@ -17,11 +26,11 @@ public class ServerAddressDefinition implements Serializable {
         this.host = host;
     }
 
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(Integer port) {
         this.port = port;
     }
 
@@ -35,6 +44,14 @@ public class ServerAddressDefinition implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("http://%s:%s%s", host, port, url);
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%s://%s", scheme, host));
+        if (port != null) {
+            sb.append(":").append(port);
+        }
+        if (url != null) {
+            sb.append(url);
+        }
+        return sb.toString();
     }
 }
