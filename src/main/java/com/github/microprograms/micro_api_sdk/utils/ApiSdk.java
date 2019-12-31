@@ -58,7 +58,6 @@ import com.github.microprograms.micro_api_sdk.model.MixinDefinition;
 import com.github.microprograms.micro_api_sdk.model.ModuleDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainEntityDefinition;
 import com.github.microprograms.micro_api_sdk.model.PlainFieldDefinition;
-import com.github.microprograms.micro_api_sdk.model.ServerAddressDefinition;
 import com.github.microprograms.micro_api_sdk.model.ShowdocDefinition;
 import com.jcabi.http.request.JdkRequest;
 
@@ -148,6 +147,10 @@ public class ApiSdk {
 		public static String buildMarkdownForHomePage(ModuleDefinition moduleDefinition) {
 			StringBuffer sb = new StringBuffer();
 			sb.append("# ").append(moduleDefinition.getComment()).append("\n\n");
+			if (StringUtils.isNotBlank(moduleDefinition.getDescription())) {
+				sb.append("**描述：**").append("\n\n");
+				sb.append("- ").append(moduleDefinition.getDescription()).append("\n\n");
+			}
 			sb.append("**Version**").append("\n\n");
 			sb.append(String.format("`%s %s`", moduleDefinition.getVersion(), _getTime())).append("\n\n");
 			sb.append(_buildMarkdownForChangeLogs(moduleDefinition));
@@ -294,13 +297,10 @@ public class ApiSdk {
 
 		private static String _buildApiUrl(ApiDefinition apiDefinition, ModuleDefinition moduleDefinition) {
 			StringBuilder sb = new StringBuilder();
-			ServerAddressDefinition serverAddressDefinition = moduleDefinition.getServerAddressDefinition();
-			sb.append(String.format("http://%s:%s", serverAddressDefinition.getHost(),
-					serverAddressDefinition.getPort()));
-			sb.append(moduleDefinition.getServerAddressDefinition().getUrl());
+			sb.append(moduleDefinition.getServerAddressDefinition().toString());
 			Map<String, Object> ext = apiDefinition.getExt();
-			if (ext != null) {
-				sb.append((String) ext.getOrDefault("url", ""));
+			if (ext != null && ext.containsKey("url")) {
+				sb.append((String) ext.get("url"));
 			}
 			return sb.toString();
 		}
